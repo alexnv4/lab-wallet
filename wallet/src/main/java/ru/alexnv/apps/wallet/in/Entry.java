@@ -183,5 +183,4 @@ public class Entry {
 		BigDecimal balance = new BigDecimal(input);
 		return balance;
 	}
-
 }

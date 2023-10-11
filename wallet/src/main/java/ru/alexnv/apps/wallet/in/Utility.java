@@ -3,6 +3,7 @@ package ru.alexnv.apps.wallet.in;
 import java.util.Map;
 import java.util.Scanner;
 
+
 /**
  * Вспомогательный класс
  * Консольный ввод и вывод указаны только здесь в единственном экземпляре 

@@ -10,5 +10,5 @@ public enum States {
 	LOGGED_IN, 
 	DEBIT, 
 	CREDIT, 
-	EXIT,
+	EXIT,	
 }

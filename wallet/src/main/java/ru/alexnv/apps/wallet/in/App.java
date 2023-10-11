@@ -10,10 +10,8 @@ public class App
 {
     public static void main( String[] args )
     {
-    	// точка входа
-    	//
-    	//
         new Injector();
     }
 
 }
+

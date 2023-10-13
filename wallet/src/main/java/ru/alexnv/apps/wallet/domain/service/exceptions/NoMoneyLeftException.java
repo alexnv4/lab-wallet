@@ -12,4 +12,3 @@ public class NoMoneyLeftException extends Exception {
 	}
 
 }
-

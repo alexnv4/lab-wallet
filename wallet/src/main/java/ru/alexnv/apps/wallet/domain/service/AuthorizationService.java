@@ -41,8 +41,7 @@ public class AuthorizationService {
 				if (player.getPassword().equals(password)) {
 					this.setPlayer(player);
 					return player;
-				}
-				else {
+				} else {
 					throw new WrongPasswordException("Неправильный пароль.");
 				}
 			}

@@ -8,6 +8,8 @@ import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoSuchPlayerException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.PlayerAlreadyExistsException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.WrongPasswordException;
+import ru.alexnv.apps.wallet.service.exceptions.AuthorizationException;
+import ru.alexnv.apps.wallet.service.exceptions.RegistrationException;
 
 public class PlayerService {
 
@@ -39,25 +41,24 @@ public class PlayerService {
 	 * Управляет вызовом функции из доменного сервиса авторизации
 	 * @param login
 	 * @param password
-	 * @return успешность авторизации
+	 * @return логин
+	 * @throws AuthorizationException - если авторизация не удалась
 	 */
-	public boolean authorize(String login, String password) {
-		boolean authorized = false;
+	public String authorize(String login, String password) throws AuthorizationException {
+		Action action = null;
 		try {
 			authorizationService.authorize(login, password);
-			authorized = true;
+			
+			action = new Action(authorizationService.getPlayer(), "игрок вошёл в кошелёк");
 		} catch (NoSuchPlayerException | WrongPasswordException e) {
-			authorized = false;
+			action = new Action(null, "попытка входа игрока " + login + " в кошелёк");
+
+			throw new AuthorizationException(e.getMessage());
+		} finally {
+			audit.addAction(action);
 		}
 		
-		Action action;
-		if (authorized) 
-			action= new Action(authorizationService.getPlayer(), "игрок вошёл в кошелёк");
-		else
-			action = new Action(null, "попытка входа игрока " + login + " в кошелёк");
-		audit.addAction(action);
-
-		return authorized;
+		return login;
 	}
 	
 	/**
@@ -65,25 +66,24 @@ public class PlayerService {
 	 * Управляет вызовом функции из доменного сервиса регистрации
 	 * @param login
 	 * @param password
-	 * @return успешность регистрации
+	 * @return логин
+	 * @throws RegistrationException - если регистрация не удалась
 	 */
-	public boolean registration(String login, String password) {
-		boolean registered = false;
+	public String registration(String login, String password) throws RegistrationException {
+		Action action = null;
 		try {
 			registrationService.register(login, password);
-			registered = true;
+
+			action = new Action(null, "игрок " + login + " зарегистрирован");
 		} catch (PlayerAlreadyExistsException e) {
-			registered = false;
+			action = new Action(null, "попытка регистрации игрока " + login);
+			
+			throw new RegistrationException(e.getMessage());
+		} finally {
+			audit.addAction(action);
 		}
 		
-		Action action;
-		if (registered) 
-			action= new Action(null, "игрок " + login + " зарегистрирован");
-		else
-			action = new Action(null, "попытка регистрации игрока " + login);
-		audit.addAction(action);
-		
-		return registered;
+		return login;
 	}
 	
 	/**

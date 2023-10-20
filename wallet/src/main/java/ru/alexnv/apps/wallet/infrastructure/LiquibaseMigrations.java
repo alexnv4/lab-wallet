@@ -11,10 +11,14 @@ import java.sql.Statement;
 import java.util.Properties;
 
 import liquibase.Liquibase;
+import liquibase.command.CommandScope;
+import liquibase.command.core.UpdateCommandStep;
+import liquibase.command.core.helpers.DbUrlConnectionCommandStep;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
+import ru.alexnv.apps.wallet.in.Utility;
 
 /**
  * Миграции БД
@@ -47,6 +51,11 @@ public class LiquibaseMigrations {
 	private static final String liquibaseFileName = "liquibase.properties";
 	
 	/**
+	 * Вспомогательный класс utility
+	 */
+	private Utility util = new Utility();
+	
+	/**
 	 * Чтение файла свойств и установка полей класса
 	 */
 	public LiquibaseMigrations() {
@@ -58,7 +67,7 @@ public class LiquibaseMigrations {
 			liquibaseSchemaName = props.getProperty("liquibaseSchemaName");
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			util.printLine("Ошибка чтения файла свойств миграций");
 		}
 	}
 
@@ -69,33 +78,26 @@ public class LiquibaseMigrations {
 	 * @throws SQLException
 	 */
 	private void createDefaultSchema(Connection connection, String schemaName) throws SQLException {
+		String sql = "create schema if not exists ";
 		try (Statement statement = connection.createStatement()) {
-			statement.execute("create schema if not exists " + schemaName);
+			statement.execute(sql + schemaName);
 		}
 	}
 	
 	/**
 	 * Выполнение миграций
 	 */
-	@SuppressWarnings("deprecation")
 	public void migrate() {
 		
 		DaoFactory daoFactory = new PostgreSqlDaoFactory(true); 
 		try (Connection connection = daoFactory.getConnection()) {
-			createDefaultSchema(connection, "liquibase_schema");
+			migrate(connection);
 			
-			Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-			database.setDefaultSchemaName(defaultSchemaName);
-			database.setLiquibaseSchemaName(liquibaseSchemaName);
-			try (Liquibase liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), database)) {
-				liquibase.update();
-			}
-			System.out.println("Миграции успешно выполнены.");
 		} catch (SQLException e) {
-			e.printStackTrace();
+			util.printLine("Ошибка работы с БД.");
 			System.exit(1);
 		} catch (Exception dbe) {
-			dbe.printStackTrace();
+			util.printLine("Ошибка выполнения миграций");
 			System.exit(2);
 		}
 	}
@@ -103,29 +105,23 @@ public class LiquibaseMigrations {
 	/**
 	 * Выполнение миграций
 	 * @param connection установленное соединение
+	 * @throws SQLException 
+	 * @throws Exception 
 	 */
-	@SuppressWarnings("deprecation")
-	public void migrate(Connection connection) {
+	public void migrate(Connection connection) throws SQLException, Exception {
 		
-		try {
-			createDefaultSchema(connection, "liquibase_schema");
-			
-			Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-			database.setDefaultSchemaName(defaultSchemaName);
-			database.setLiquibaseSchemaName(liquibaseSchemaName);
-			try (Liquibase liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), database)) {
-				liquibase.update();
-			}
-			System.out.println("Миграции успешно выполнены.");
-		} catch (SQLException e) {
-			System.out.println("---SQL EXCEPTION---");
-			e.printStackTrace();
-			System.exit(1);
-		} catch (Exception dbe) {
-			System.out.println("---EXCEPTION---");
-			dbe.printStackTrace();
-			System.exit(2);
+		createDefaultSchema(connection, liquibaseSchemaName);
+
+		Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+		database.setDefaultSchemaName(defaultSchemaName);
+		database.setLiquibaseSchemaName(liquibaseSchemaName);
+		try (Liquibase liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), database)) {
+			CommandScope updateCommand = new CommandScope(UpdateCommandStep.COMMAND_NAME);
+			updateCommand.addArgumentValue(DbUrlConnectionCommandStep.DATABASE_ARG, database);
+			updateCommand.addArgumentValue(UpdateCommandStep.CHANGELOG_FILE_ARG, changeLogFile);
+			updateCommand.execute();
 		}
+		util.printLine("Миграции успешно выполнены.");
 	}
 
 }

@@ -30,7 +30,7 @@ class PlayerServiceTest extends ContainerEnvironment {
 	
 	@BeforeAll
 	@DisplayName("Инициализация")
-	static void setup() throws SQLException, RegistrationException {
+	static void setup() throws Exception {
 		
 		String url = System.getProperty("DB_URL");
 		String username = System.getProperty("DB_USERNAME");

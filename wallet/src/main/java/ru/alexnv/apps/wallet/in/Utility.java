@@ -62,7 +62,7 @@ public class Utility {
 	 * Печать строки
 	 * @param line
 	 */
-	protected void printLine(String line) {
+	public void printLine(String line) {
 		outputStream.println(line);
 	}
 

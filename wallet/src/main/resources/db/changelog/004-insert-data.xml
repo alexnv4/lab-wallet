@@ -3,7 +3,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.10.xsd">
 
-    <changeSet id="002-insert-data" author="alexnv">
+    <changeSet id="001-insert-player-data" author="alexnv">
         <insert tableName="players">
             <column name="login" value="player1"/>
             <column name="password" value="pass1"/>

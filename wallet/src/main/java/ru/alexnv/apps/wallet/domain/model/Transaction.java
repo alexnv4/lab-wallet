@@ -1,11 +1,18 @@
 package ru.alexnv.apps.wallet.domain.model;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
+/**
+ * Модель предметной области - транзакция
+ */
 public class Transaction {
 
+	/**
+	 * Идентификатор транзакции
+	 */
+	private long id;
+	
 	/**
 	 * Баланс до совершения транзакции
 	 */
@@ -21,22 +28,45 @@ public class Transaction {
 	/**
 	 * Дата совершения транзакции
 	 */
-	private final Date date = new Date();	
-	/**
-	 * Уникальный идентификатор транзакции
-	 */
-	private final UUID uuid = UUID.randomUUID();
-	/**
-	 * Вид транзакции (дебет или кредит)
-	 */
-	private String description;
+	private LocalDateTime dateTime;	
 
 	/**
+	 * @param balanceBefore
+	 * @param balanceAfter
 	 * @param player
 	 */
-	public Transaction(Player player) {
+	public Transaction(Player player, BigDecimal balanceBefore, BigDecimal balanceAfter) {
 		super();
 		this.player = player;
+		this.balanceBefore = balanceBefore;
+		this.balanceAfter = balanceAfter;
+		this.dateTime = LocalDateTime.now();
+	}
+	
+	/**
+	 * @param id
+	 * @param balanceBefore
+	 * @param balanceAfter
+	 * @param player
+	 * @param dateTime
+	 */
+	public Transaction(long id, BigDecimal balanceBefore, BigDecimal balanceAfter, Player player,
+			LocalDateTime dateTime) {
+		this(balanceBefore, balanceAfter, player, dateTime);
+		this.id = id;
+	}
+
+
+
+	/**
+	 * @param balanceBefore
+	 * @param balanceAfter
+	 * @param player
+	 * @param dateTime
+	 */
+	public Transaction(BigDecimal balanceBefore, BigDecimal balanceAfter, Player player, LocalDateTime dateTime) {
+		this(player, balanceBefore, balanceAfter);
+		this.dateTime = dateTime;
 	}
 
 	/**
@@ -47,24 +77,10 @@ public class Transaction {
 	}
 	
 	/**
-	 * @param balanceBefore
-	 */
-	public void setBalanceBefore(BigDecimal balanceBefore) {
-		this.balanceBefore = balanceBefore;
-	}
-	
-	/**
 	 * @return баланс после транзакции
 	 */
 	public BigDecimal getBalanceAfter() {
 		return balanceAfter;
-	}
-	
-	/**
-	 * @param balanceAfter
-	 */
-	public void setBalanceAfter(BigDecimal balanceAfter) {
-		this.balanceAfter = balanceAfter;
 	}
 	
 	/**
@@ -75,27 +91,48 @@ public class Transaction {
 	}
 
 	/**
-	 * @return вид транзакции
-	 */
-	public String getDescription() {
-		return description;
-	}
-
-	/**
-	 * @param description
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	
-	/**
 	 * Формат вывода транзакции
 	 */
 	@Override
 	public String toString() {
-		return String.format("%s %s %s %s %s", date.toString(), player.getLogin(), description,
+		return String.format("%s %s %s %s", dateTime.toString(), player.getLogin(), 
 				balanceBefore.toString(), balanceAfter.toString());
 		
+	}
+
+	/**
+	 * @return the dateTime
+	 */
+	public LocalDateTime getDateTime() {
+		return dateTime;
+	}
+
+	/**
+	 * @param dateTime the dateTime to set
+	 */
+	public void setDateTime(LocalDateTime dateTime) {
+		this.dateTime = dateTime;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	/**
+	 * @param player the player to set
+	 */
+	public void setPlayer(Player player) {
+		this.player = player;
 	}
 
 }

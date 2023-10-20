@@ -1,37 +1,93 @@
 package ru.alexnv.apps.wallet.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.function.Executable;
-
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.sql.SQLException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import ru.alexnv.apps.wallet.domain.model.Player;
 import ru.alexnv.apps.wallet.domain.service.AuthorizationService;
 import ru.alexnv.apps.wallet.domain.service.RegistrationService;
+import ru.alexnv.apps.wallet.infrastructure.LiquibaseMigrations;
+import ru.alexnv.apps.wallet.infrastructure.PostgreSqlDaoFactory;
+import ru.alexnv.apps.wallet.service.config.ContainerEnvironment;
 import ru.alexnv.apps.wallet.service.exceptions.AuthorizationException;
 import ru.alexnv.apps.wallet.service.exceptions.RegistrationException;
 
 @DisplayName("PlayerService test class")
-class PlayerServiceTest {
-
+class PlayerServiceTest extends ContainerEnvironment {
+	
 	private static PlayerService playerService;
 	private static RegistrationService registrationService;
 	private static AuthorizationService authorizationService;
-	private static List<Player> players; 
+	
+	private static java.sql.Connection connection = null;
 	
 	@BeforeAll
 	@DisplayName("Инициализация")
-	static void setup() {
-		players = new ArrayList<>();
-		authorizationService = new AuthorizationService(players);
-		registrationService = new RegistrationService(players);
-		playerService = new PlayerService(authorizationService, registrationService);
+	static void setup() throws SQLException, RegistrationException {
+		
+		String url = System.getProperty("DB_URL");
+		String username = System.getProperty("DB_USERNAME");
+		String password = System.getProperty("DB_PASSWORD");
+		
+		PostgreSqlDaoFactory daoFactory = new PostgreSqlDaoFactory();
+		try {
+			connection = daoFactory.getConnection(url, username, password);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		authorizationService = new AuthorizationService(daoFactory.getPlayerDao(connection),
+				daoFactory.getTransactionDao(connection));
+		registrationService = new RegistrationService(daoFactory.getPlayerDao(connection));
+		playerService = new PlayerService(authorizationService, registrationService, 
+				daoFactory.getAuditorDao(connection));
+		
+		// Запуск миграций
+		LiquibaseMigrations lbm = new LiquibaseMigrations();
+		lbm.migrate(connection);
+		connection.close();
+		connection = null;
+	}
+	
+//	@AfterAll
+//	static void cleanup() throws SQLException {
+//		if (connection != null) {
+//			connection.close();
+//		}
+//	}
+	
+	@BeforeEach
+	void init() {
+		String url = System.getProperty("DB_URL");
+		String username = System.getProperty("DB_USERNAME");
+		String password = System.getProperty("DB_PASSWORD");
+		
+		PostgreSqlDaoFactory daoFactory = new PostgreSqlDaoFactory();
+		try {
+			connection = daoFactory.getConnection(url, username, password);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		authorizationService = new AuthorizationService(daoFactory.getPlayerDao(connection),
+				daoFactory.getTransactionDao(connection));
+		registrationService = new RegistrationService(daoFactory.getPlayerDao(connection));
+		playerService = new PlayerService(authorizationService, registrationService, 
+				daoFactory.getAuditorDao(connection));
+	}
+	
+	@AfterEach void cleanup() throws SQLException {
+		if (connection != null) {
+			connection.close();
+			connection = null;
+		}
 	}
 
 	@Test
@@ -46,7 +102,7 @@ class PlayerServiceTest {
 		String registeredLogin = playerService.registration(login, password);
 		
 		// then
-		assertTrue(login.equals(registeredLogin));		
+		assertTrue(login.equals(registeredLogin));
 	}
 	
 	@Test

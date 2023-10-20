@@ -1,6 +1,7 @@
 package ru.alexnv.apps.wallet.in;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 import ru.alexnv.apps.wallet.in.exceptions.IncorrectBalanceInputException;
@@ -49,6 +50,8 @@ public class Entry {
 	 */
 	public Entry(PlayerService playerService) {
 		this.playerService = playerService;
+		
+		// Запуск основного меню
 		menuLoop();
 	}
 	
@@ -132,12 +135,14 @@ public class Entry {
 					screenState = States.CREDIT;
 					break;
 				case CHOICE_HISTORY:
-					String transactionsHistory = playerService.getTransactionsHistory();
-					util.printLine(transactionsHistory);
+					List<String> transactionsHistory = playerService.getTransactionsHistory();
+					util.printText(transactionsHistory.toArray(new String[0]));
 					
 					screenState = States.LOGGED_IN;
 					break;
 				case CHOICE_LOGOUT:
+					playerService.logout();
+					
 					screenState = States.WELCOME;
 					break;
 				default:
@@ -157,7 +162,7 @@ public class Entry {
 					}
 				} catch (IncorrectBalanceInputException e) {
 					util.printLine(e.getMessage());				
-				}				
+				}
 				screenState = States.LOGGED_IN;
 				break;
 				

@@ -1,13 +1,16 @@
 package ru.alexnv.apps.wallet.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import liquibase.exception.DatabaseException;
 import ru.alexnv.apps.wallet.domain.service.AuthorizationService;
 import ru.alexnv.apps.wallet.domain.service.RegistrationService;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoSuchPlayerException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.PlayerAlreadyExistsException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.WrongPasswordException;
+import ru.alexnv.apps.wallet.infrastructure.dao.AuditorDao;
 import ru.alexnv.apps.wallet.service.exceptions.AuthorizationException;
 import ru.alexnv.apps.wallet.service.exceptions.RegistrationException;
 
@@ -23,17 +26,22 @@ public class PlayerService {
 	private final RegistrationService registrationService;
 	
 	/**
-	 * @param authorizationService
-	 * @param registrationService
+	 * Аудит действий
 	 */
-	
 	private Auditor audit;
+	
+	public PlayerService(AuthorizationService authorizationService, RegistrationService registrationService,
+			AuditorDao auditorDao) {
+		super();
+		this.authorizationService = authorizationService;
+		this.registrationService = registrationService;
+		audit = new Auditor(auditorDao);
+	}
 	
 	public PlayerService(AuthorizationService authorizationService, RegistrationService registrationService) {
 		super();
 		this.authorizationService = authorizationService;
 		this.registrationService = registrationService;
-		audit = new Auditor();
 	}
 	
 	/**
@@ -49,8 +57,8 @@ public class PlayerService {
 		try {
 			authorizationService.authorize(login, password);
 			
-			action = new Action(authorizationService.getPlayer(), "игрок вошёл в кошелёк");
-		} catch (NoSuchPlayerException | WrongPasswordException e) {
+			action = new Action(authorizationService.getPlayer(), "игрок " + login + " вошёл в кошелёк");
+		} catch (NoSuchPlayerException | WrongPasswordException | DatabaseException e) {
 			action = new Action(null, "попытка входа игрока " + login + " в кошелёк");
 
 			throw new AuthorizationException(e.getMessage());
@@ -75,7 +83,7 @@ public class PlayerService {
 			registrationService.register(login, password);
 
 			action = new Action(null, "игрок " + login + " зарегистрирован");
-		} catch (PlayerAlreadyExistsException e) {
+		} catch (PlayerAlreadyExistsException | DatabaseException e) {
 			action = new Action(null, "попытка регистрации игрока " + login);
 			
 			throw new RegistrationException(e.getMessage());
@@ -101,20 +109,25 @@ public class PlayerService {
 	 * Выход игрока из кошелька
 	 */
 	public void logout() {
-		authorizationService.setPlayer(null);
 		
 		Action action = new Action(authorizationService.getPlayer(), "выход из аккаунта");
 		audit.addAction(action);
+		
+		authorizationService.setPlayer(null);
 	}
 	
 	/**
 	 * Кредит на игрока
 	 * @param balance
 	 */
-	public void credit(BigDecimal balance) {		
-		authorizationService.getPlayer().credit(balance);
+	public void credit(BigDecimal balance) {	
+		try {
+			authorizationService.creditPlayer(balance);
+		} catch (DatabaseException e) {
+			e.printStackTrace();
+		}
 		
-		Action action = new Action(authorizationService.getPlayer(), "кредит игрока на сумму" + balance.toString());
+		Action action = new Action(authorizationService.getPlayer(), "кредит игрока на сумму " + balance.toString());
 		audit.addAction(action);		
 	}
 	
@@ -126,30 +139,36 @@ public class PlayerService {
 	public String debit(BigDecimal balance) {
 		String result;
 		try {
-			authorizationService.getPlayer().debit(balance);
+			//authorizationService.getPlayer().debit(balance);
+			authorizationService.debitPlayer(balance);
 			result = null;
-		} catch (NoMoneyLeftException e) {
+		} catch (NoMoneyLeftException | DatabaseException e) {
 			result = e.getMessage();
 		}
 		
 		Action action;
-		if (result == null)
-			action = new Action(authorizationService.getPlayer(), "дебет игрока на сумму" + balance.toString());
-		else 
-			action = new Action(authorizationService.getPlayer(), "попытка дебета игрока на сумму" + balance.toString());
+		if (result == null) {
+			action = new Action(authorizationService.getPlayer(), "дебет игрока на сумму " + balance.toString());
+		} else { 
+			action = new Action(authorizationService.getPlayer(), "попытка дебета игрока на сумму " + balance.toString());
+		}
 		audit.addAction(action);	
 		return result;
 	}
 	
 	/**
 	 * Получение списка выполненных транзакций игрока
-	 * @return список транзакций
+	 * @return список транзакций в виде текста
 	 */
-	public String getTransactionsHistory() {
+	public List<String> getTransactionsHistory() {
 		Action action = new Action(authorizationService.getPlayer(), "запрос игроком списка транзакций");
 		audit.addAction(action);
 		
-		return authorizationService.getPlayer().getTransactions().toString();
+		try {
+			return authorizationService.getTransactionsHistory();
+		} catch (DatabaseException e) {
+			return null;
+		}
 	}
 	
 }

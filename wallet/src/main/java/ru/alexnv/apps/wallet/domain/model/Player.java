@@ -120,34 +120,6 @@ public class Player {
 	}
 
 	/**
-	 * Дебетовая операция Будет успешной только в том случае, если на счету
-	 * достаточно средств (баланс - сумма дебета >= 0)
-	 * 
-	 * @param amount
-	 * @throws NoMoneyLeftException
-	 */
-	public void debit(BigDecimal amount) throws NoMoneyLeftException {
-		if (balance.compareTo(amount) < 0) {
-			throw new NoMoneyLeftException("Недостаточно средств для снятия.");
-		}
-
-		BigDecimal newBalance = balance.subtract(amount);
-		registerTransaction(balance, newBalance);
-		this.balance = newBalance;
-	}
-
-	/**
-	 * Кредит на игрока
-	 * 
-	 * @param amount
-	 */
-	public void credit(BigDecimal amount) {
-		BigDecimal newBalance = balance.add(amount);
-		registerTransaction(balance, newBalance);
-		this.balance = newBalance;
-	}
-
-	/**
 	 * @return список завершённых транзакций
 	 */
 	public List<Transaction> getTransactions() {
@@ -157,17 +129,9 @@ public class Player {
 	public Transaction getLastTransaction() {
 		return (transactions.get(transactions.size() - 1));
 	}
-
-	/**
-	 * @param balanceBefore
-	 * @param balanceAfter
-	 * @param description
-	 * @return транзакция
-	 */
-	private Transaction registerTransaction(BigDecimal balanceBefore, BigDecimal balanceAfter) {
-		Transaction transaction = new Transaction(this, balanceBefore, balanceAfter);
+	
+	public void addTransaction(Transaction transaction) {
 		transactions.add(transaction);
-		return transaction;
 	}
 
 	/**

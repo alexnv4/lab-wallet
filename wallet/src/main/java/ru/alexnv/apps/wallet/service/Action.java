@@ -7,27 +7,35 @@ import ru.alexnv.apps.wallet.domain.model.Player;
  * Действие, сохраняемое при аудите
  */
 public class Action {
-	
+
 	/**
 	 * Текущий игрок
 	 */
 	private Player player;
-	
+
 	/**
 	 * Описание совершенного действия
 	 */
 	private String description;
-	
+
 	/**
 	 * Время совершения действия
 	 */
-	private LocalDateTime dateTime;	
-	
+	private LocalDateTime dateTime;
+
 	public Action(Player player, String description) {
-		super();
 		this.player = player;
 		this.description = description;
 		this.dateTime = LocalDateTime.now();
+	}
+
+	/**
+	 * Конструктор на действие незалогиненного игрока
+	 * 
+	 * @param description
+	 */
+	public Action(String description) {
+		this(null, description);
 	}
 
 	/**

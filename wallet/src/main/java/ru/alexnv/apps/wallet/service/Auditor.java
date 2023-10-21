@@ -10,26 +10,30 @@ import ru.alexnv.apps.wallet.infrastructure.dao.DaoException;
  * Аудит всех действий игрока
  */
 public class Auditor {
-	
+
 	/**
 	 * Список действий
 	 */
 	private List<Action> actions;
-	
+
+	/**
+	 * DAO аудита, устанавливается извне
+	 */
 	private AuditorDao auditorDao;
-	
+
 	public Auditor(AuditorDao auditorDao) {
 		actions = new ArrayList<>();
 		this.auditorDao = auditorDao;
 	}
-	
+
 	/**
 	 * Добавление действия в аудит
+	 * 
 	 * @param action
 	 */
 	public void addAction(Action action) {
 		actions.add(action);
-		
+
 		// запись действия в базу
 		try {
 			auditorDao.insert(action);
@@ -37,7 +41,7 @@ public class Auditor {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * @return список действий
 	 */

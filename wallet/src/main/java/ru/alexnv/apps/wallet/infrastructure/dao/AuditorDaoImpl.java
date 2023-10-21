@@ -16,7 +16,7 @@ import ru.alexnv.apps.wallet.service.Action;
  * Реализация интерфейса DAO аудита
  */
 public class AuditorDaoImpl implements AuditorDao {
-	
+
 	/**
 	 * Установленное соединение с БД
 	 */
@@ -33,14 +33,14 @@ public class AuditorDaoImpl implements AuditorDao {
 	@Override
 	/**
 	 * Добавление действия аудита в БД
+	 * 
 	 * @param action объект действия
 	 * @return добавленное действие
 	 * @throws DaoException ошибка работы с БД
 	 */
 	public Action insert(Action action) throws DaoException {
-		
 		final String sql = "INSERT INTO wallet_schema.audit(description, date, player_id) VALUES(?, ?, ?);";
-		
+
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 			statement.setString(1, action.getDescription());
 			statement.setObject(2, action.getDateTime());
@@ -54,16 +54,15 @@ public class AuditorDaoImpl implements AuditorDao {
 				throw new DaoException("Ошибка добавления действия в базу данных.");
 			}
 			try (ResultSet resultSet = statement.getGeneratedKeys()) {
-				if (resultSet.next()) {
-					//long id = resultSet.getInt(1);
-					//action.setId(id);
-					return action;
-				} else {
+				if (!resultSet.next()) {
 					throw new DaoException("Ошибка получения сгенерированного ID.");
 				}
+
+				// long id = resultSet.getInt(1);
+				// action.setId(id);
+				return action;
 			}
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			throw new DaoException("Ошибка добавления аудита: ", e);
 		}
 	}

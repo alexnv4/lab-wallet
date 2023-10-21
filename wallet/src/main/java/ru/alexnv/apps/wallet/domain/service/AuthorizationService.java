@@ -44,10 +44,11 @@ public class AuthorizationService {
 	}
 
 	/**
-	 * Авторизация игрока Сначала проверяется логин: если не существует, то
-	 * исключение NoSuchPlayerException Затем проверяется пароль: если пароль
-	 * неправильный, то исключение WrongPasswordException При успешной авторизации
-	 * устанавливается поле player
+	 * Авторизация игрока 
+	 * Сначала проверяется логин: если не существует, то исключение NoSuchPlayerException
+	 * Затем проверяется пароль: если пароль неправильный, 
+	 * то исключение WrongPasswordException
+	 * При успешной авторизации устанавливается поле player
 	 * 
 	 * @param login
 	 * @param password
@@ -67,6 +68,7 @@ public class AuthorizationService {
 					if (!password.equals(player.getPassword())) {
 						throw new WrongPasswordException("Неправильный пароль.");
 					}
+					
 					// Логин игрока
 					this.setPlayer(player);
 					return player;
@@ -97,13 +99,34 @@ public class AuthorizationService {
 	}
 
 	/**
+	 * Создание новой транзакции и её добавление в список игрока
+	 * @param balanceBefore
+	 * @param balanceAfter
+	 * @param description
+	 * @return транзакция
+	 */
+	private Transaction registerTransaction(BigDecimal balanceBefore, BigDecimal balanceAfter) {
+		Transaction transaction = new Transaction(player, balanceBefore, balanceAfter);
+		player.addTransaction(transaction);
+		return transaction;
+	}
+
+	/**
 	 * Кредит игрока с добавлением информации в БД
+	 * Для вызова метода player не должен быть null
 	 * 
-	 * @param balance
+	 * @param amount количество средств
 	 * @throws DatabaseException
 	 */
-	public void creditPlayer(BigDecimal balance) throws DatabaseException {
-		player.credit(balance);
+	public void creditPlayer(BigDecimal amount) throws DatabaseException {
+		if (player == null) {
+			System.err.println("Попытка кредита незалогиненного игрока.");
+			return;
+		}
+		BigDecimal oldBalance = player.getBalanceNumeric();
+		BigDecimal newBalance = oldBalance.add(amount);
+		registerTransaction(oldBalance, newBalance);
+		player.setBalance(newBalance);
 
 		updatePlayerTransaction();
 	}
@@ -125,14 +148,28 @@ public class AuthorizationService {
 	}
 
 	/**
-	 * Дебет игрока с добавлением информации в БД
+	 * Дебетовая операция Будет успешной только в том случае, если на счету
+	 * достаточно средств (баланс - сумма дебета >= 0)
+	 * Операция записывается в БД
+	 * Для вызова метода player не должен быть null
 	 * 
-	 * @param balance
+	 * @param amount количество средств
 	 * @throws NoMoneyLeftException
 	 * @throws DatabaseException
 	 */
-	public void debitPlayer(BigDecimal balance) throws NoMoneyLeftException, DatabaseException {
-		player.debit(balance);
+	public void debitPlayer(BigDecimal amount) throws NoMoneyLeftException, DatabaseException {
+		if (player == null) {
+			System.err.println("Попытка дебета незалогиненного игрока.");
+			return;
+		}
+		BigDecimal oldBalance = player.getBalanceNumeric();
+		if (oldBalance.compareTo(amount) < 0) {
+			throw new NoMoneyLeftException("Недостаточно средств для снятия.");
+		}
+
+		BigDecimal newBalance = oldBalance.subtract(amount);
+		registerTransaction(oldBalance, newBalance);
+		player.setBalance(newBalance);
 
 		updatePlayerTransaction();
 	}

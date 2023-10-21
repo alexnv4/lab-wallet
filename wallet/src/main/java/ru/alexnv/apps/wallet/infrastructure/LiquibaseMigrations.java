@@ -24,37 +24,37 @@ import ru.alexnv.apps.wallet.in.Utility;
  * Миграции БД
  */
 public class LiquibaseMigrations {
-	
-	/**
-	 * Свойства миграций, считываются из файла
-	 */
-	private Properties props;
-	
-	/**
-	 * Имя конфигурационного файла с миграциями (XML)
-	 */
-	private String changeLogFile;
-	
-	/**
-	 * Схема БД по умолчанию
-	 */
-	private String defaultSchemaName;
-	
-	/**
-	 * Схема миграций по умолчанию
-	 */
-	private String liquibaseSchemaName;
-	
+
 	/**
 	 * Имя файла свойств БД и liquibase
 	 */
 	private static final String liquibaseFileName = "liquibase.properties";
-	
+
+	/**
+	 * Свойства миграций, считываются из файла
+	 */
+	private Properties props;
+
+	/**
+	 * Имя конфигурационного файла с миграциями (XML)
+	 */
+	private String changeLogFile;
+
+	/**
+	 * Схема БД по умолчанию
+	 */
+	private String defaultSchemaName;
+
+	/**
+	 * Схема миграций по умолчанию
+	 */
+	private String liquibaseSchemaName;
+
 	/**
 	 * Вспомогательный класс utility
 	 */
 	private Utility util = new Utility();
-	
+
 	/**
 	 * Чтение файла свойств и установка полей класса
 	 */
@@ -65,7 +65,7 @@ public class LiquibaseMigrations {
 			changeLogFile = props.getProperty("changeLogFile");
 			defaultSchemaName = props.getProperty("defaultSchemaName");
 			liquibaseSchemaName = props.getProperty("liquibaseSchemaName");
-			
+
 		} catch (IOException e) {
 			util.printLine("Ошибка чтения файла свойств миграций");
 		}
@@ -73,26 +73,27 @@ public class LiquibaseMigrations {
 
 	/**
 	 * Создание служебной схемы liquibase по умолчанию
+	 * 
 	 * @param connection установленное соединение
 	 * @param schemaName имя схемы
 	 * @throws SQLException
 	 */
 	private void createDefaultSchema(Connection connection, String schemaName) throws SQLException {
 		String sql = "create schema if not exists ";
+		
 		try (Statement statement = connection.createStatement()) {
 			statement.execute(sql + schemaName);
 		}
 	}
-	
+
 	/**
 	 * Выполнение миграций
 	 */
 	public void migrate() {
-		
-		DaoFactory daoFactory = new PostgreSqlDaoFactory(true); 
+		DaoFactory daoFactory = new PostgreSqlDaoFactory(true);
 		try (Connection connection = daoFactory.getConnection()) {
 			migrate(connection);
-			
+
 		} catch (SQLException e) {
 			util.printLine("Ошибка работы с БД.");
 			System.exit(1);
@@ -101,18 +102,19 @@ public class LiquibaseMigrations {
 			System.exit(2);
 		}
 	}
-	
+
 	/**
 	 * Выполнение миграций
+	 * 
 	 * @param connection установленное соединение
-	 * @throws SQLException 
-	 * @throws Exception 
+	 * @throws SQLException
+	 * @throws Exception
 	 */
 	public void migrate(Connection connection) throws SQLException, Exception {
-		
 		createDefaultSchema(connection, liquibaseSchemaName);
 
-		Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+		Database database = DatabaseFactory.getInstance()
+				.findCorrectDatabaseImplementation(new JdbcConnection(connection));
 		database.setDefaultSchemaName(defaultSchemaName);
 		database.setLiquibaseSchemaName(liquibaseSchemaName);
 		try (Liquibase liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), database)) {

@@ -15,45 +15,45 @@ import ru.alexnv.apps.wallet.infrastructure.dao.TransactionDao;
 import ru.alexnv.apps.wallet.infrastructure.dao.TransactionDaoImpl;
 
 public class PostgreSqlDaoFactory implements DaoFactory {
-	
-	/**
-	 * Имя пользователя БД
-	 */
-	private String user;
-	
-	/**
-	 * Пароль пользователя БД
-	 */
-	private String password;
-	
-	/**
-	 * JDBC URL для соединения
-	 */
-	private String url;
-	
-	/**
-	 * Свойства для подключения
-	 */
-	private Properties props;
-	
-	//private String driver;
-	
+
 	/**
 	 * Имя файла, в котором хранятся настройки БД
 	 */
 	private static final String liquibaseFileName = "liquibase.properties";
-	
+
+	/**
+	 * Имя пользователя БД
+	 */
+	private String user;
+
+	/**
+	 * Пароль пользователя БД
+	 */
+	private String password;
+
+	/**
+	 * JDBC URL для соединения
+	 */
+	private String url;
+
+	/**
+	 * Свойства для подключения
+	 */
+	private Properties props;
+
+	// private String driver;
+
 	/**
 	 * Соединение с БД
 	 */
 	private Connection connection = null;
-	
+
 	public PostgreSqlDaoFactory(boolean readProperties) {
 		if (readProperties) {
 			props = new Properties();
 			try (InputStream is = getClass().getClassLoader().getResourceAsStream(liquibaseFileName)) {
 				props.load(is);
-				//driver = props.getProperty("driver");
+				// driver = props.getProperty("driver");
 				url = props.getProperty("url");
 				user = props.getProperty("username");
 				password = props.getProperty("password");
@@ -62,20 +62,21 @@ public class PostgreSqlDaoFactory implements DaoFactory {
 				e.printStackTrace();
 			}
 
-			//		try {
-			//			Class.forName(driver);
-			//		} catch (ClassNotFoundException e) {
-			//			e.printStackTrace();
-			//		}
+			// try {
+			// Class.forName(driver);
+			// } catch (ClassNotFoundException e) {
+			// e.printStackTrace();
+			// }
 		}
 	}
-	
+
 	public PostgreSqlDaoFactory() {
-		
+
 	}
-	
+
 	/**
 	 * Получение соединения с БД
+	 * 
 	 * @return соединение
 	 * @throws SQLException
 	 */
@@ -85,10 +86,10 @@ public class PostgreSqlDaoFactory implements DaoFactory {
 		}
 		return connection;
 	}
-	
+
 	/**
-	 * @param url JDBC URL
-	 * @param user пользователь
+	 * @param url      JDBC URL
+	 * @param user     пользователь
 	 * @param password пароль
 	 * @return соединение
 	 * @throws SQLException

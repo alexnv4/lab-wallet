@@ -8,7 +8,7 @@ public class NotNumberException extends Exception {
 	private static final long serialVersionUID = -6843184579698404213L;
 
 	public NotNumberException(String message) {
-		super(message);	
+		super(message);
 	}
 
 }

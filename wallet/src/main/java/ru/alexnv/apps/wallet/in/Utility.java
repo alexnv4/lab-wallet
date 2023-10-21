@@ -8,23 +8,22 @@ import java.util.Scanner;
 import ru.alexnv.apps.wallet.in.exceptions.IncorrectMenuChoiceException;
 import ru.alexnv.apps.wallet.in.exceptions.NotNumberException;
 
-
 /**
- * Вспомогательный класс
- * Консольный ввод и вывод указаны только здесь в единственном экземпляре 
+ * Вспомогательный класс Консольный ввод и вывод указаны только здесь в
+ * единственном экземпляре
  */
 public class Utility {
-	
+
 	/**
 	 * Разделитель для печати меню
 	 */
 	private static final String delimiter = "----------------------------";
-	
+
 	/**
 	 * Входной поток данных
 	 */
 	private final InputStream inputStream = System.in;
-	
+
 	/**
 	 * Выходной поток данных
 	 */
@@ -33,9 +32,10 @@ public class Utility {
 	 * Объект для ввода из консоли
 	 */
 	private Scanner scanner = new Scanner(inputStream);
-	
+
 	/**
 	 * Вывод текста и ввод целого числа
+	 * 
 	 * @param text
 	 * @return число
 	 * @throws NotNumberException введено не число
@@ -43,13 +43,14 @@ public class Utility {
 	protected int getUserChoice(String[] text) throws NotNumberException {
 		printLine(delimiter);
 		printText(text);
-		
+
 		int choice = getInt();
 		return choice;
 	}
-	
+
 	/**
 	 * Печать текста
+	 * 
 	 * @param text
 	 */
 	protected void printText(String[] text) {
@@ -57,9 +58,10 @@ public class Utility {
 			printLine(line);
 		}
 	}
-	
+
 	/**
 	 * Печать строки
+	 * 
 	 * @param line
 	 */
 	public void printLine(String line) {
@@ -68,6 +70,7 @@ public class Utility {
 
 	/**
 	 * Ввод строки
+	 * 
 	 * @param message
 	 * @return строка без пробелов в начале и в конце
 	 */
@@ -82,6 +85,7 @@ public class Utility {
 
 	/**
 	 * Ввод числа
+	 * 
 	 * @return число
 	 * @throws NotNumberException если введено не число
 	 */
@@ -92,42 +96,45 @@ public class Utility {
 			try {
 				number = Integer.valueOf(input);
 			} catch (NumberFormatException e) {
-				throw new NotNumberException("Ошибка. Введено не число.");				
+				throw new NotNumberException("Ошибка. Введено не число.");
 			}
 		}
-		
+
 		return number;
 	}
-	
+
 	/**
 	 * Преобразование коллекции Map в текст (String[])
+	 * 
 	 * @param map
 	 * @return текст
 	 */
 	protected String[] convertMapToStringArray(Map<Integer, ?> map) {
 		String[] text = new String[map.size()];
-	    for (Integer key : map.keySet()) {
-	        text[key-1] = key.toString() + map.get(key);
-	    }
-	    return text;
+		for (Integer key : map.keySet()) {
+			text[key - 1] = key.toString() + map.get(key);
+		}
+		return text;
 	}
-	
+
 	/**
 	 * Ввод логина и пароля
+	 * 
 	 * @return логин и пароль
 	 */
 	protected String[] getCredentials() {
 		String login = getString("Введите логин: ");
 		String password = getString("Введите пароль: ");
-		String[] credectianls = {login, password};
+		String[] credectianls = { login, password };
 		return credectianls;
 	}
-	
+
 	/**
 	 * Получение значения enum из введённой цифры
+	 * 
 	 * @param choice
 	 * @return выбор стартового меню
-	 * @throws IncorrectMenuChoiceException если такого пункта нет в меню 
+	 * @throws IncorrectMenuChoiceException если такого пункта нет в меню
 	 */
 	protected WelcomeMenuChoices getWelcomeEnumByNumber(int choice) throws IncorrectMenuChoiceException {
 		WelcomeMenuChoices result = null;
@@ -137,16 +144,17 @@ public class Utility {
 				break;
 			}
 		}
-		
+
 		if (result == null) {
 			throw new IncorrectMenuChoiceException("Такого пункта в меню нет.");
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Получение значения enum из введённой цифры
+	 * 
 	 * @param choice
 	 * @return выбор залогиненного меню
 	 * @throws IncorrectMenuChoiceException если такого пункта нет в меню
@@ -159,11 +167,11 @@ public class Utility {
 				break;
 			}
 		}
-		
+
 		if (result == null) {
 			throw new IncorrectMenuChoiceException("Такого пункта в меню нет.");
 		}
 		return result;
 	}
-	
+
 }

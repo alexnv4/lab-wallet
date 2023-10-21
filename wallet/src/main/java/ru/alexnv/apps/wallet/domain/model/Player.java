@@ -10,25 +10,27 @@ import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
  * Модель предметной области - игрок
  */
 public class Player {
-	
-	
+
 	/**
 	 * Идентификатор пользователя
 	 */
 	private long id;
-	
+
 	/**
 	 * Логин пользователя
 	 */
 	private String login;
+
 	/**
 	 * Пароль пользователя
 	 */
 	private String password;
+
 	/**
 	 * Баланс в формате 0.00
 	 */
 	private BigDecimal balance;
+
 	/**
 	 * Список завершённых транзакций
 	 */
@@ -40,46 +42,49 @@ public class Player {
 	public String getLogin() {
 		return login;
 	}
-	
+
 	/**
 	 * @param login
 	 */
 	public void setLogin(String login) {
 		this.login = login;
 	}
-	
+
 	/**
 	 * @return password
 	 */
 	public String getPassword() {
 		return password;
 	}
-	
+
 	/**
 	 * @param password
 	 */
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
+
 	/**
 	 * @return баланс в формате строки
 	 */
 	public String getBalance() {
 		return balance.toString();
 	}
-	
+
+	/**
+	 * @return баланс с типом BigDecimal
+	 */
 	public BigDecimal getBalanceNumeric() {
 		return balance;
 	}
-	
+
 	/**
 	 * @param balance
 	 */
 	public void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
-	
+
 	/**
 	 * @param login
 	 * @param password
@@ -88,10 +93,10 @@ public class Player {
 		this.login = login;
 		this.password = password;
 		this.id = -1;
-		this.balance = new BigDecimal("0.00"); 
+		this.balance = new BigDecimal("0.00");
 		this.transactions = new ArrayList<>();
 	}
-	
+
 	/**
 	 * @param login
 	 * @param password
@@ -102,7 +107,7 @@ public class Player {
 		this.id = id;
 		this.balance = balance;
 	}
-	
+
 	/**
 	 * @param login
 	 * @param password
@@ -115,23 +120,25 @@ public class Player {
 	}
 
 	/**
-	 * Дебетовая операция
-	 * Будет успешной только в том случае, если на счету достаточно средств (баланс - сумма дебета >= 0)
+	 * Дебетовая операция Будет успешной только в том случае, если на счету
+	 * достаточно средств (баланс - сумма дебета >= 0)
+	 * 
 	 * @param amount
 	 * @throws NoMoneyLeftException
 	 */
 	public void debit(BigDecimal amount) throws NoMoneyLeftException {
-		if (balance.compareTo(amount) >= 0) {
-			BigDecimal newBalance = balance.subtract(amount);
-			registerTransaction(balance, newBalance);
-			this.balance = newBalance;
-		} else {
+		if (balance.compareTo(amount) < 0) {
 			throw new NoMoneyLeftException("Недостаточно средств для снятия.");
 		}
+
+		BigDecimal newBalance = balance.subtract(amount);
+		registerTransaction(balance, newBalance);
+		this.balance = newBalance;
 	}
-	
+
 	/**
 	 * Кредит на игрока
+	 * 
 	 * @param amount
 	 */
 	public void credit(BigDecimal amount) {
@@ -139,18 +146,18 @@ public class Player {
 		registerTransaction(balance, newBalance);
 		this.balance = newBalance;
 	}
-	
+
 	/**
 	 * @return список завершённых транзакций
 	 */
 	public List<Transaction> getTransactions() {
 		return transactions;
 	}
-	
+
 	public Transaction getLastTransaction() {
 		return (transactions.get(transactions.size() - 1));
 	}
-	
+
 	/**
 	 * @param balanceBefore
 	 * @param balanceAfter

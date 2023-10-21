@@ -12,23 +12,26 @@ public class Transaction {
 	 * Идентификатор транзакции
 	 */
 	private long id;
-	
+
 	/**
 	 * Баланс до совершения транзакции
 	 */
 	private BigDecimal balanceBefore;
+
 	/**
 	 * Баланс после совершения транзакции
 	 */
 	private BigDecimal balanceAfter;
+
 	/**
 	 * Игрок
 	 */
 	private Player player;
+
 	/**
 	 * Дата совершения транзакции
 	 */
-	private LocalDateTime dateTime;	
+	private LocalDateTime dateTime;
 
 	/**
 	 * @param balanceBefore
@@ -42,7 +45,7 @@ public class Transaction {
 		this.balanceAfter = balanceAfter;
 		this.dateTime = LocalDateTime.now();
 	}
-	
+
 	/**
 	 * @param id
 	 * @param balanceBefore
@@ -55,8 +58,6 @@ public class Transaction {
 		this(balanceBefore, balanceAfter, player, dateTime);
 		this.id = id;
 	}
-
-
 
 	/**
 	 * @param balanceBefore
@@ -75,14 +76,14 @@ public class Transaction {
 	public BigDecimal getBalanceBefore() {
 		return balanceBefore;
 	}
-	
+
 	/**
 	 * @return баланс после транзакции
 	 */
 	public BigDecimal getBalanceAfter() {
 		return balanceAfter;
 	}
-	
+
 	/**
 	 * @return игрок
 	 */
@@ -95,9 +96,9 @@ public class Transaction {
 	 */
 	@Override
 	public String toString() {
-		return String.format("%s %s %s %s", dateTime.toString(), player.getLogin(), 
-				balanceBefore.toString(), balanceAfter.toString());
-		
+		return String.format("%s %s %s %s", dateTime.toString(), player.getLogin(), balanceBefore.toString(),
+				balanceAfter.toString());
+
 	}
 
 	/**

@@ -17,6 +17,7 @@
     <!--<maven.compiler.target>17</maven.compiler.target>-->
     <maven.compiler.release>17</maven.compiler.release>
     <junit.jupiter.version>5.10.0</junit.jupiter.version>
+    <testcontainers-version>1.19.1</testcontainers-version>
   </properties>
 
   <dependencies>
@@ -47,6 +48,12 @@
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
       <version>4.24.0</version>
+      <exclusions>
+		<exclusion>
+		  <groupId>org.liquibase</groupId>
+		  <artifactId>liquibase-commercial</artifactId>
+		</exclusion>
+	  </exclusions>
     </dependency>
 	<!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-maven-plugin -->
 <!--    <dependency>-->
@@ -58,14 +65,14 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.19.1</version>
+      <version>${testcontainers-version}</version>
       <scope>test</scope>
     </dependency>
     
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.19.1</version>
+      <version>${testcontainers-version}</version>
       <scope>test</scope>
     </dependency>
     
@@ -73,7 +80,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
-      <version>1.19.1</version>
+      <version>${testcontainers-version}</version>
       <scope>test</scope>
     </dependency>
 

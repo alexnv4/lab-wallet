@@ -8,7 +8,7 @@ public enum WelcomeMenuChoices {
 	CHOICE_LOGIN(2),
 	CHOICE_EXIT(3),
 	CHOICE_NOT_EXIST(-1);
-	
+
 	/**
 	 * Выбранный пункт меню
 	 */
@@ -17,7 +17,7 @@ public enum WelcomeMenuChoices {
 	WelcomeMenuChoices(int choice) {
 		this.choice = choice;
 	}
-	
+
 	/**
 	 * @return выбор
 	 */

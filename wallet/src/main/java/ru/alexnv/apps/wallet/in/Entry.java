@@ -1,6 +1,7 @@
 package ru.alexnv.apps.wallet.in;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 import ru.alexnv.apps.wallet.in.exceptions.IncorrectBalanceInputException;
@@ -15,11 +16,6 @@ import ru.alexnv.apps.wallet.service.exceptions.RegistrationException;
  */
 public class Entry {
 	
-	/**
-	 * Вспомогательный класс utility
-	 */
-	private Utility util = new Utility();
-
 	/**
 	 * Стартовое меню
 	 */
@@ -37,30 +33,35 @@ public class Entry {
 			LoggedMenuChoices.CHOICE_CREDIT.getChoice(), " - Пополнение средств (кредит)",
 			LoggedMenuChoices.CHOICE_HISTORY.getChoice(), " - История пополнений и снятий",
 			LoggedMenuChoices.CHOICE_LOGOUT.getChoice(), " - Выход из аккаунта");
-	
-	
+
 	/**
 	 * Служба приложения, устанавливаемая внешним слоем
 	 */
 	private final PlayerService playerService;
 
 	/**
+	 * Вспомогательный класс utility
+	 */
+	private Utility util = new Utility();
+
+	/**
 	 * @param playerService
 	 */
 	public Entry(PlayerService playerService) {
 		this.playerService = playerService;
+
+		// Запуск основного меню
 		menuLoop();
 	}
-	
+
 	/**
-	 * Основной цикл приложения
-	 * После каждого case устанавливается следующее состояние приложения
+	 * Основной цикл приложения После каждого case устанавливается следующее
+	 * состояние приложения
 	 */
 	private void menuLoop() {
-		
 		States screenState = States.WELCOME;
 		String[] credentials;
-		
+
 		do {
 			switch (screenState) {
 			case WELCOME:
@@ -85,7 +86,7 @@ public class Entry {
 					util.printLine("Ошибка ввода. Повторите");
 				}
 				break;
-				
+
 			case REGISTER:
 				credentials = util.getCredentials();
 				try {
@@ -94,10 +95,10 @@ public class Entry {
 				} catch (RegistrationException e) {
 					util.printLine(e.getMessage());
 				}
-				
+
 				screenState = States.WELCOME;
 				break;
-				
+
 			case AUTHORIZE:
 				credentials = util.getCredentials();
 				try {
@@ -110,7 +111,7 @@ public class Entry {
 				}
 
 				break;
-				
+
 			case LOGGED_IN:
 				LoggedMenuChoices loggedMenuChoices;
 				try {
@@ -118,6 +119,7 @@ public class Entry {
 				} catch (IncorrectMenuChoiceException e) {
 					loggedMenuChoices = LoggedMenuChoices.CHOICE_NOT_EXIST;
 				}
+
 				switch (loggedMenuChoices) {
 				case CHOICE_BALANCE:
 					String balance = playerService.getBalance();
@@ -132,12 +134,14 @@ public class Entry {
 					screenState = States.CREDIT;
 					break;
 				case CHOICE_HISTORY:
-					String transactionsHistory = playerService.getTransactionsHistory();
-					util.printLine(transactionsHistory);
-					
+					List<String> transactionsHistory = playerService.getTransactionsHistory();
+					util.printText(transactionsHistory.toArray(new String[0]));
+
 					screenState = States.LOGGED_IN;
 					break;
 				case CHOICE_LOGOUT:
+					playerService.logout();
+
 					screenState = States.WELCOME;
 					break;
 				default:
@@ -145,49 +149,50 @@ public class Entry {
 					break;
 				}
 				break;
-				
+
 			case DEBIT:
 				BigDecimal inputDebit = null;
 				try {
 					inputDebit = balanceInput();
-					
+
 					String result = playerService.debit(inputDebit);
 					if (result != null) {
-						util.printLine(result);					
+						util.printLine(result);
 					}
 				} catch (IncorrectBalanceInputException e) {
-					util.printLine(e.getMessage());				
-				}				
+					util.printLine(e.getMessage());
+				}
+
 				screenState = States.LOGGED_IN;
 				break;
-				
+
 			case CREDIT:
 				BigDecimal inputCredit = null;
 				try {
 					inputCredit = balanceInput();
-					
+
 					playerService.credit(inputCredit);
 				} catch (IncorrectBalanceInputException e) {
 					util.printLine(e.getMessage());
 				}
-				
+
 				screenState = States.LOGGED_IN;
 				break;
-				
+
 			case EXIT:
 				break;
 			}
-		}
-		while (screenState != States.EXIT);
+		} while (screenState != States.EXIT);
 	}
-	
+
 	/**
 	 * Печать меню и выбор пункта стартового меню
+	 * 
 	 * @return выбранный пункт меню
 	 * @throws IncorrectMenuChoiceException если такого пункта меню нет
 	 */
 	private WelcomeMenuChoices welcomeMenuInput() throws IncorrectMenuChoiceException {
-		String[] welcomeText = util.convertMapToStringArray(welcomeMenu); 
+		String[] welcomeText = util.convertMapToStringArray(welcomeMenu);
 		int choice = 0; // введённое число, может не сооветствовать пункту меню
 		try {
 			choice = util.getUserChoice(welcomeText);
@@ -202,6 +207,7 @@ public class Entry {
 
 	/**
 	 * Печать меню и выбор пункта меню залогиненного игрока
+	 * 
 	 * @return выбранный пункт меню
 	 * @throws IncorrectMenuChoiceException если такого пункта меню нет
 	 */
@@ -213,13 +219,14 @@ public class Entry {
 		} catch (NotNumberException e) {
 			throw new IncorrectMenuChoiceException("Ошибка ввода числа.");
 		}
-		
+
 		LoggedMenuChoices loggedMenuChoice = util.getLoggedEnumByNumber(choice);
 		return loggedMenuChoice;
 	}
 
 	/**
 	 * Ввод баланса
+	 * 
 	 * @return BigDecimal баланс
 	 * @throws IncorrectBalanceInputException если неправильно введён баланс
 	 */
@@ -233,7 +240,7 @@ public class Entry {
 				throw new IncorrectBalanceInputException("Неправильный ввод средств.");
 			}
 		} catch (NumberFormatException e) {
-			throw new IncorrectBalanceInputException("Неправильный ввод средств.");			
+			throw new IncorrectBalanceInputException("Неправильный ввод средств.");
 		}
 		return balance;
 	}

@@ -6,8 +6,9 @@ package ru.alexnv.apps.wallet.in;
 public enum WelcomeMenuChoices {
 	CHOICE_REGISTER(1),
 	CHOICE_LOGIN(2),
-	CHOICE_EXIT(3);
-	
+	CHOICE_EXIT(3),
+	CHOICE_NOT_EXIST(-1);
+
 	/**
 	 * Выбранный пункт меню
 	 */
@@ -16,7 +17,7 @@ public enum WelcomeMenuChoices {
 	WelcomeMenuChoices(int choice) {
 		this.choice = choice;
 	}
-	
+
 	/**
 	 * @return выбор
 	 */

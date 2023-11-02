@@ -20,6 +20,13 @@ public interface DaoFactory {
 	 * @throws SQLException
 	 */
 	Connection getConnection() throws SQLException;
+	
+	/**
+	 * Закрытие соединения
+	 * 
+	 * @throws SQLException
+	 */
+	void closeConnection() throws SQLException;
 
 	/**
 	 * @param connection

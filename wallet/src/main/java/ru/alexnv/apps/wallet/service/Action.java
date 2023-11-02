@@ -1,6 +1,7 @@
 package ru.alexnv.apps.wallet.service;
 
 import java.time.LocalDateTime;
+
 import ru.alexnv.apps.wallet.domain.model.Player;
 
 /**
@@ -23,6 +24,12 @@ public class Action {
 	 */
 	private LocalDateTime dateTime;
 
+	/**
+	 * Создание действия игрока с описанием
+	 * 
+	 * @param player игрок
+	 * @param description описание действия
+	 */
 	public Action(Player player, String description) {
 		this.player = player;
 		this.description = description;
@@ -32,7 +39,7 @@ public class Action {
 	/**
 	 * Конструктор на действие незалогиненного игрока
 	 * 
-	 * @param description
+	 * @param description описание действия
 	 */
 	public Action(String description) {
 		this(null, description);

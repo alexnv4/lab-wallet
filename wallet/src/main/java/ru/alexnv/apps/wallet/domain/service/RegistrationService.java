@@ -9,7 +9,7 @@ import ru.alexnv.apps.wallet.infrastructure.dao.DaoException;
 import ru.alexnv.apps.wallet.infrastructure.dao.PlayerDao;
 
 /**
- * 
+ * Сервис регистрации
  */
 public class RegistrationService {
 
@@ -18,14 +18,20 @@ public class RegistrationService {
 	 */
 	private final PlayerDao playerDao;
 
+	/**
+	 * Создание сервиса регистрации
+	 * 
+	 * @param playerDao DAO игрока
+	 */
 	public RegistrationService(PlayerDao playerDao) {
 		this.playerDao = playerDao;
 	}
 
 	/**
-	 * Регистрация пользователя При совпадении фактического параметра login с полем
-	 * login любого игрока из базы - исключение PlayerAlreadyExistsException При
-	 * успешной регистрации добавляет игрока в базу
+	 * Регистрация пользователя
+	 * При совпадении фактического параметра login с полем login любого игрока
+	 * из базы - исключение PlayerAlreadyExistsException
+	 * При успешной регистрации добавляет игрока в базу
 	 * 
 	 * @param login
 	 * @param password

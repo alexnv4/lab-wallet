@@ -21,6 +21,11 @@ public class Auditor {
 	 */
 	private AuditorDao auditorDao;
 
+	/**
+	 * Создание аудита действий игрока
+	 * 
+	 * @param auditorDao DAO аудита
+	 */
 	public Auditor(AuditorDao auditorDao) {
 		actions = new ArrayList<>();
 		this.auditorDao = auditorDao;

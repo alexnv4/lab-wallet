@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,30 +37,24 @@ public class TransactionDaoImpl implements TransactionDao {
 	 * Добавление транзакции в БД
 	 * 
 	 * @param transaction объект транзакции
-	 * @return добавленная транзакция с установленным идентификатором из БД
+	 * @return добавленная транзакция
 	 * @throws DaoException ошибка работы с БД
 	 */
 	public Transaction insert(Transaction transaction) throws DaoException {
-		final String sql = "INSERT INTO wallet_schema.transactions(balance_before, balance_after, date, player_id) VALUES(?, ?, ?, ?);";
+		final String sql = "INSERT INTO wallet_schema.transactions(transaction_id, balance_before, balance_after, date, player_id) VALUES(?, ?, ?, ?, ?);";
 
-		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-			statement.setBigDecimal(1, transaction.getBalanceBefore());
-			statement.setBigDecimal(2, transaction.getBalanceAfter());
-			statement.setObject(3, transaction.getDateTime());
-			statement.setLong(4, transaction.getPlayer().getId());
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, transaction.getId());
+			statement.setBigDecimal(2, transaction.getBalanceBefore());
+			statement.setBigDecimal(3, transaction.getBalanceAfter());
+			statement.setObject(4, transaction.getDateTime());
+			statement.setLong(5, transaction.getPlayer().getId());
 			int rowsAffected = statement.executeUpdate();
-			if (rowsAffected < 1) {
+			if (rowsAffected != 1) {
 				throw new DaoException("Ошибка добавления транзакции в базу данных.");
 			}
-			try (ResultSet resultSet = statement.getGeneratedKeys()) {
-				if (!resultSet.next()) {
-					throw new DaoException("Ошибка получения сгенерированного ID.");
-				}
-
-				long id = resultSet.getInt(1);
-				transaction.setId(id);
-				return transaction;
-			}
+			
+			return transaction;
 		} catch (SQLException e) {
 			throw new DaoException("Ошибка добавления транзакции: ", e);
 		}
@@ -79,10 +72,33 @@ public class TransactionDaoImpl implements TransactionDao {
 		return false;
 	}
 
+	/**
+	 * Поиск транзакции в БД по идентификатору.
+	 *
+	 * @param PK идентификатор транзакции
+	 * @return найденная транзакция
+	 * @throws DaoException транзакция не найдена
+	 */
 	@Override
 	public Transaction findById(long PK) throws DaoException {
-		// TODO Auto-generated method stub
-		return null;
+		final String sql = "SELECT * FROM wallet_schema.transactions WHERE transaction_id = ?;";
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setLong(1, PK);
+			try (ResultSet resultSet = statement.executeQuery()) {
+				resultSet.next();
+
+				long id = resultSet.getLong("transaction_id");
+				BigDecimal balanceBefore = resultSet.getBigDecimal("balance_before");
+				BigDecimal balanceAfter = resultSet.getBigDecimal("balance_after");
+				LocalDateTime localDateTime = resultSet.getObject("date", LocalDateTime.class);
+
+				Transaction transaction = new Transaction(id, balanceBefore, balanceAfter, null, localDateTime);
+				return transaction;
+			}
+		} catch (SQLException e) {
+			throw new DaoException("Ошибка поиска транзакции: ", e);
+		}
 	}
 
 	@Override

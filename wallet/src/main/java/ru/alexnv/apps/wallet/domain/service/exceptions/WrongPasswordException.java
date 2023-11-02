@@ -5,8 +5,12 @@ package ru.alexnv.apps.wallet.domain.service.exceptions;
  */
 public class WrongPasswordException extends Exception {
 
-	private static final long serialVersionUID = 4L;
+	/** The Constant serialVersionUID. */
+	private static final long serialVersionUID = 8202023052993909738L;
 
+	/**
+	 * @param message
+	 */
 	public WrongPasswordException(String message) {
 		super(message);
 	}

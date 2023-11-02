@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
+import ru.alexnv.apps.wallet.domain.mappers.Default;
 
 /**
  * Модель предметной области - игрок
@@ -14,7 +14,7 @@ public class Player {
 	/**
 	 * Идентификатор пользователя
 	 */
-	private long id;
+	private Long id;
 
 	/**
 	 * Логин пользователя
@@ -92,29 +92,32 @@ public class Player {
 	public Player(String login, String password) {
 		this.login = login;
 		this.password = password;
-		this.id = -1;
+		this.id = null;
 		this.balance = new BigDecimal("0.00");
 		this.transactions = new ArrayList<>();
 	}
 
 	/**
+	 * @param id 
 	 * @param login
 	 * @param password
 	 * @param balance
-	 */
-	public Player(long id, String login, String password, BigDecimal balance) {
+	 */	
+	@Default
+	public Player(Long id, String login, String password, BigDecimal balance) {
 		this(login, password);
 		this.id = id;
 		this.balance = balance;
 	}
 
 	/**
+	 * @param id 
 	 * @param login
 	 * @param password
 	 * @param balance
 	 * @param transactions
 	 */
-	public Player(long id, String login, String password, BigDecimal balance, List<Transaction> transactions) {
+	public Player(Long id, String login, String password, BigDecimal balance, List<Transaction> transactions) {
 		this(id, login, password, balance);
 		this.transactions = transactions;
 	}
@@ -126,10 +129,20 @@ public class Player {
 		return transactions;
 	}
 
+	/**
+	 * Получение последней транзакции игрока
+	 * 
+	 * @return последняя выполненная транзакция
+	 */
 	public Transaction getLastTransaction() {
 		return (transactions.get(transactions.size() - 1));
 	}
 	
+	/**
+	 * Добавление транзакции для игрока
+	 * 
+	 * @param transaction транзакция
+	 */
 	public void addTransaction(Transaction transaction) {
 		transactions.add(transaction);
 	}
@@ -144,7 +157,7 @@ public class Player {
 	/**
 	 * @param id
 	 */
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

@@ -15,10 +15,3 @@ services:
     #  - ./postgres-data:/var/lib/postgresql/data
     ports:
       - 5439:5432
-
-  #adminer:
-  #  image: adminer
-  #  container_name: adminer
-  #  restart: always
-  #  ports:
-  #    - 8080:8080

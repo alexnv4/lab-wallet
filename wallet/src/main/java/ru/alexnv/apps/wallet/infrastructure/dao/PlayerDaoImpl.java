@@ -105,7 +105,7 @@ public class PlayerDaoImpl implements PlayerDao {
 	 * @throws DaoException ошибка работы с БД
 	 */
 	public Player findById(long PK) throws DaoException {
-		final String sql = "SELECT * FROM players WHERE id = ?;";
+		final String sql = "SELECT * FROM wallet_schema.players WHERE id = ?;";
 
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, PK);

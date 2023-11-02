@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="https://jakarta.ee/xml/ns/jakartaee"
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+	version="6.0">
+	<display-name>wallet</display-name>
+
+	<listener>
+		<listener-class>ru.alexnv.apps.wallet.in.AppContextListener</listener-class>
+	</listener>
+	<servlet>
+		<description></description>
+		<display-name>RegisterServlet</display-name>
+		<servlet-name>RegisterServlet</servlet-name>
+		<servlet-class>ru.alexnv.apps.wallet.in.servlets.RegisterServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>RegisterServlet</servlet-name>
+		<url-pattern>/registration</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description></description>
+		<display-name>AuthorizationServlet</display-name>
+		<servlet-name>AuthorizationServlet</servlet-name>
+		<servlet-class>ru.alexnv.apps.wallet.in.servlets.AuthorizationServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AuthorizationServlet</servlet-name>
+		<url-pattern>/login</url-pattern>
+	</servlet-mapping>
+	
+	<filter>
+		<display-name>JsonRequestFilter</display-name>
+		<filter-name>JsonRequestFilter</filter-name>
+		<filter-class>ru.alexnv.apps.wallet.in.filters.JsonRequestFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>JsonRequestFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<servlet>
+		<description></description>
+		<display-name>OperationsServlet</display-name>
+		<servlet-name>OperationsServlet</servlet-name>
+		<servlet-class>ru.alexnv.apps.wallet.in.servlets.OperationsServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>OperationsServlet</servlet-name>
+		<url-pattern>/players/*</url-pattern>
+	</servlet-mapping>
+	<filter>
+		<display-name>AuthorizedFilter</display-name>
+		<filter-name>AuthorizedFilter</filter-name>
+		<filter-class>ru.alexnv.apps.wallet.in.filters.AuthorizedFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>AuthorizedFilter</filter-name>
+		<url-pattern>/players/*</url-pattern>
+	</filter-mapping>
+</web-app>

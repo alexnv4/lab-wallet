@@ -3,7 +3,7 @@
  */
 package ru.alexnv.apps.wallet.domain.dto;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 
@@ -17,12 +17,12 @@ public class PlayerDto extends AbstractDto {
 	private Long id;
 
 	/** Логин пользователя. */
-	@NotEmpty(message = "Логин не должен быть пустым или не определённым")
+	@NotNull(message = "Логин не должен быть пустым или не определённым")
 	@Size(min = 3, max = 20, message = "Логин должен быть не менее 3 символов и не более 20 символов.")
 	private String login;
 
 	/** Пароль пользователя. */
-	@NotEmpty(message = "Пароль не должен быть пустым или не определённым")
+	@NotNull(message = "Пароль не должен быть пустым или не определённым")
 	@Size(min = 4, max = 32, message = "Пароль должен быть не менее 4 символов и не более 32 символов.")
 	private String password;
 

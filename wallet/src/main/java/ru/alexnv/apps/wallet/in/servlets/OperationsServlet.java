@@ -1,15 +1,21 @@
 package ru.alexnv.apps.wallet.in.servlets;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.List;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import ru.alexnv.apps.wallet.aop.annotations.Loggable;
-import ru.alexnv.apps.wallet.domain.dto.*;
-import ru.alexnv.apps.wallet.domain.dto.validators.BalanceChangeDtoValidator;
+import ru.alexnv.apps.wallet.domain.dto.BalanceChangeDto;
+import ru.alexnv.apps.wallet.domain.dto.PlayerDto;
+import ru.alexnv.apps.wallet.domain.dto.TransactionDto;
+import ru.alexnv.apps.wallet.domain.dto.validators.DtoValidationException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.TransactionIdNotUniqueException;
 import ru.alexnv.apps.wallet.in.Utility;
 import ru.alexnv.apps.wallet.service.PlayerService;
@@ -23,13 +29,7 @@ public class OperationsServlet extends HttpServlet {
 	
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
-	
-	/** The Constant AUTHORIZATION_NAME. */
-	public static final String AUTHORIZATION_NAME = "Authorization";
-	
-	/** The Constant BEARER_NAME. */
-	public static final String BEARER_NAME = "Bearer ";
-	
+
 	/** Вспомогательный класс. */
 	private Utility util;
 	
@@ -57,8 +57,16 @@ public class OperationsServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	PlayerDto playerDto = getPlayerDto(request);
-    	servletsUtil.respondWithJson(response, SC_OK, playerDto);
+    	String path = request.getPathInfo();
+    	
+    	if (path != null && path.endsWith("/balance")) {
+    		PlayerDto playerDto = getPlayerDto(request);
+    		servletsUtil.respondWithJson(response, SC_OK, playerDto);
+    	} else if (path.endsWith("/transactions")) {
+    		var playerService = (PlayerService) getServletContext().getAttribute("PlayerService");
+    		List<TransactionDto> transactionsDto = playerService.getTransactionsHistory();
+    		servletsUtil.respondWithJson(response, SC_OK, transactionsDto);
+    	}
     }
     
     /**
@@ -87,7 +95,7 @@ public class OperationsServlet extends HttpServlet {
 		int responseCode = SC_BAD_REQUEST;
 		
 		try {
-			balanceChangeDto = servletsUtil.readValidDto(request, BalanceChangeDto.class, new BalanceChangeDtoValidator());
+			balanceChangeDto = servletsUtil.readValidDto(request, BalanceChangeDto.class);
 		} catch (IOException e) {
 			servletsUtil.respondWithError(response, responseCode, "Ошибка парсинга JSON.");
 			return;

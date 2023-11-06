@@ -9,7 +9,9 @@ import java.util.List;
 
 import liquibase.exception.DatabaseException;
 import ru.alexnv.apps.wallet.domain.dto.PlayerDto;
+import ru.alexnv.apps.wallet.domain.dto.TransactionDto;
 import ru.alexnv.apps.wallet.domain.mappers.PlayerMapper;
+import ru.alexnv.apps.wallet.domain.mappers.TransactionMapper;
 import ru.alexnv.apps.wallet.domain.model.Player;
 import ru.alexnv.apps.wallet.domain.model.Transaction;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
@@ -128,20 +130,23 @@ public class PlayerOperationsService {
 	 * @return список транзакций в виде текста
 	 * @throws DatabaseException ошибка работы с базой данных
 	 */
-	public List<String> getTransactionsHistory() throws DatabaseException {
+	public List<TransactionDto> getTransactionsHistory() throws DatabaseException {
 		Player player = authorizationService.getPlayer();
 		try {
 			// Загрузить с базы List транзакций на игрока
 			List<Transaction> transactions = transactionDao.getAllWithPlayerId(player.getId());
 
 			List<String> history = new ArrayList<>();
+			List<TransactionDto> transactionsDto = new ArrayList<>();
 			// Установить поле player всем транзакциям и заполнить массив истории
+			// Преобразование в DTO
 			for (Transaction transaction : transactions) {
 				transaction.setPlayer(player);
 				history.add(transaction.toString());
+				transactionsDto.add(TransactionMapper.INSTANCE.toDto(transaction));
 			}
-
-			return history;
+			
+			return transactionsDto;
 
 		} catch (DaoException e) {
 			throw new DatabaseException("Ошибка работы с БД " + e.getMessage());

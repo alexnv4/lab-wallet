@@ -1,13 +1,18 @@
 package ru.alexnv.apps.wallet.in.servlets;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
+import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
+
 import java.io.IOException;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
-import static jakarta.servlet.http.HttpServletResponse.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import ru.alexnv.apps.wallet.aop.annotations.Loggable;
 import ru.alexnv.apps.wallet.domain.dto.PlayerDto;
-import ru.alexnv.apps.wallet.domain.dto.validators.PlayerDtoValidator;
+import ru.alexnv.apps.wallet.domain.dto.validators.DtoValidationException;
 import ru.alexnv.apps.wallet.in.Utility;
 import ru.alexnv.apps.wallet.service.PlayerService;
 import ru.alexnv.apps.wallet.service.exceptions.RegistrationException;
@@ -55,7 +60,7 @@ public class RegisterServlet extends HttpServlet {
 		int responseCode = SC_BAD_REQUEST;
 		
 		try {
-			playerDto = servletsUtil.readValidDto(request, PlayerDto.class, new PlayerDtoValidator());
+			playerDto = servletsUtil.readValidDto(request, PlayerDto.class);
 		} catch (IOException e) {
 			servletsUtil.respondWithError(response, responseCode, "Ошибка парсинга JSON.");
 			return;

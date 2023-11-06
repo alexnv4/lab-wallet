@@ -1,17 +1,25 @@
 package ru.alexnv.apps.wallet.in.filters;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import java.io.IOException;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import ru.alexnv.apps.wallet.in.*;
-import ru.alexnv.apps.wallet.in.servlets.OperationsServlet;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import ru.alexnv.apps.wallet.in.JSONWebToken;
+import ru.alexnv.apps.wallet.in.Utility;
 
 /**
  * Фильтр авторизованных запросов.
@@ -20,6 +28,13 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
        
     /** The Constant serialVersionUID. */
     private static final long serialVersionUID = 8252598143332039828L;
+    
+	/** The Constant AUTHORIZATION_NAME. */
+	private static final String AUTHORIZATION_NAME = "Authorization";
+	
+	/** The Constant BEARER_NAME. */
+	private static final String BEARER_NAME = "Bearer ";
+	
     
     /** Вспомогательный класс. */
     private static Utility util = new Utility();
@@ -53,9 +68,9 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
 		HttpServletResponse httpResponse = (HttpServletResponse) response;
 		int responseCode = SC_UNAUTHORIZED;
 
-		String authorizationHeader = httpRequest.getHeader(OperationsServlet.AUTHORIZATION_NAME);
-		if (authorizationHeader != null && authorizationHeader.startsWith(OperationsServlet.BEARER_NAME)) {
-			String token = authorizationHeader.substring(OperationsServlet.BEARER_NAME.length());
+		String authorizationHeader = httpRequest.getHeader(AUTHORIZATION_NAME);
+		if (authorizationHeader != null && authorizationHeader.startsWith(BEARER_NAME)) {
+			String token = authorizationHeader.substring(BEARER_NAME.length());
 			JSONWebToken jwt = createJWT();
 			try {
 				if (jwt.isValidToken(token)) { // подпись токена валидна
@@ -101,12 +116,10 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
 	 */
 	private Long getPlayerIdFromURI(HttpServletRequest request) {
 		String pathInfo = request.getPathInfo();
-		if (pathInfo.endsWith("/balance")) {
-			String[] parts = pathInfo.split("/");
-			if (parts.length == 3 && parts[1].matches("\\d+")) {
-				Long playerIdURI = Long.valueOf(parts[1]);
-				return playerIdURI;
-			}
+		String[] parts = pathInfo.split("/");
+		if (parts.length == 3 && parts[1].matches("\\d+")) {
+			Long playerIdURI = Long.valueOf(parts[1]);
+			return playerIdURI;
 		}
 		return null;
 	}

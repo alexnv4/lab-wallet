@@ -4,6 +4,7 @@
 package ru.alexnv.apps.wallet.in.servlets;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,10 +84,12 @@ public class ServletsUtility {
 	 * Валидация любого DTO любым валидатором
 	 * 
 	 * @param dto DTO для валидации, должно быть унаследовано от AbstractDto
-	 * @param dtoValidator DTO валидатор, должен быть унаследован от AbstractDtoValidator
 	 * @return список строк нарушений валидации, пустой список - если нарушений не выявлено
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
 	 */
-	protected List<String> validateDto(AbstractDto dto, AbstractDtoValidator dtoValidator) {
+	public List<String> validateDto(AbstractDto dto) throws IllegalArgumentException, IllegalAccessException {
+		var dtoValidator = new DtoValidator();
 		List<String> violations = dtoValidator.validate(dto);
 		return violations;
 	}
@@ -115,17 +118,22 @@ public class ServletsUtility {
 	 * @param <T> наследник AbstractDto, который будет возвращён
 	 * @param request HTTP запрос
 	 * @param dtoClass класс DTO, унаследованный от AbstractDto
-	 * @param dtoValidator DTO валидатор, должен быть унаследован от AbstractDtoValidator
 	 * @return десериализованное и валидированное DTO
 	 * @throws IOException ошибка ввода-вывода
 	 * @throws DtoValidationException ошибка валидации DTO, содержит список нарушений
 	 */
 	public <T extends AbstractDto> T readValidDto(HttpServletRequest request,
-			Class<T> dtoClass, AbstractDtoValidator dtoValidator) throws IOException, DtoValidationException {
+			Class<T> dtoClass) throws IOException, DtoValidationException {
 		// Десериализация DTO
 		T dto = deserializeDto(request, dtoClass);
 		// Валидация DTO
-		List<String> violations = validateDto(dto, dtoValidator);
+		List<String> violations = new ArrayList<>();
+		try {
+			violations = validateDto(dto);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+			throw new DtoValidationException(violations);
+		}
 		if (!violations.isEmpty()) {
 			throw new DtoValidationException(violations);
 		}

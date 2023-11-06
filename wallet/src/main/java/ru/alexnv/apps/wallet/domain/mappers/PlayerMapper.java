@@ -4,6 +4,7 @@
 package ru.alexnv.apps.wallet.domain.mappers;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import ru.alexnv.apps.wallet.domain.dto.PlayerDto;
@@ -32,5 +33,6 @@ public interface PlayerMapper {
 	 * @param playerDto DTO игрока
 	 * @return сущность игрок
 	 */
+	@Mapping(target = "transactions", ignore = true)
 	Player toEntity(PlayerDto playerDto);
 }

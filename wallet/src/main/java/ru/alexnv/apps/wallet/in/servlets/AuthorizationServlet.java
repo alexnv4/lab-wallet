@@ -1,19 +1,25 @@
 package ru.alexnv.apps.wallet.in.servlets;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import java.io.IOException;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import ru.alexnv.apps.wallet.aop.annotations.Loggable;
 import ru.alexnv.apps.wallet.domain.dto.PlayerDto;
-import ru.alexnv.apps.wallet.domain.dto.validators.PlayerDtoValidator;
-import ru.alexnv.apps.wallet.in.*;
+import ru.alexnv.apps.wallet.domain.dto.validators.DtoValidationException;
+import ru.alexnv.apps.wallet.in.JSONWebToken;
+import ru.alexnv.apps.wallet.in.Utility;
 import ru.alexnv.apps.wallet.service.PlayerService;
 import ru.alexnv.apps.wallet.service.exceptions.AuthorizationException;
 
@@ -58,7 +64,7 @@ public class AuthorizationServlet extends HttpServlet {
 		int responseCode = SC_BAD_REQUEST;
 		
 		try {
-			playerDto = servletsUtil.readValidDto(request, PlayerDto.class, new PlayerDtoValidator());
+			playerDto = servletsUtil.readValidDto(request, PlayerDto.class);
 		} catch (IOException e) {
 			servletsUtil.respondWithError(response, responseCode, "Ошибка парсинга JSON.");
 			return;

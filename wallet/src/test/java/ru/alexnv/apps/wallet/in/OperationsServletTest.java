@@ -52,6 +52,7 @@ class OperationsServletTest {
 		
         // Задаём нужные параметры для запроса
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/wallet/players/1/balance"));
+        when(request.getPathInfo()).thenReturn("/1/balance");
 		
         // Создаём StringWriter для записи ответа
         StringWriter stringWriter = new StringWriter();

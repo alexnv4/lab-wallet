@@ -44,7 +44,7 @@ public class AppContextListener implements ServletContextListener {
 		}
 		
 		sce.getServletContext().setAttribute("Connection", connection);
-		System.out.println("Database connection initialized for Application.");
+		System.out.println("Соединение с базой данных установлено.");
 		
 		inject(sce, daoFactory, connection);
 

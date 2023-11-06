@@ -3,6 +3,8 @@
  */
 package ru.alexnv.apps.wallet.domain.mappers;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import ru.alexnv.apps.wallet.domain.dto.TransactionDto;
@@ -11,6 +13,7 @@ import ru.alexnv.apps.wallet.domain.model.Transaction;
 /**
  * Интерфейс маппинга сущности транзакции в DTO
  */
+@Mapper
 public interface TransactionMapper {
 	
 	/** Создание маппера MapStruct. */
@@ -30,6 +33,7 @@ public interface TransactionMapper {
 	 * @param transactionDto DTO транзакции
 	 * @return сущность транзакция
 	 */
+	@Mapping(target = "player", ignore = true)
 	Transaction toEntity(TransactionDto transactionDto);
 
 }

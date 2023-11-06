@@ -25,7 +25,9 @@ public abstract class AbstractDtoValidator {
 	 *
 	 * @param dto DTO
 	 * @return список нарушений
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
 	 */
-	public abstract List<String> validate(AbstractDto dto);
+	public abstract List<String> validate(AbstractDto dto) throws IllegalArgumentException, IllegalAccessException;
 
 }

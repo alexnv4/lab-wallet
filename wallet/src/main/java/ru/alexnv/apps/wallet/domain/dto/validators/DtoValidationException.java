@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ru.alexnv.apps.wallet.in.servlets;
+package ru.alexnv.apps.wallet.domain.dto.validators;
 
 import java.util.List;
 

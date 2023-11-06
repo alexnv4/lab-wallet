@@ -3,6 +3,8 @@ package ru.alexnv.apps.wallet.domain.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import ru.alexnv.apps.wallet.domain.mappers.Default;
+
 /**
  * Модель предметной области - транзакция
  */
@@ -56,6 +58,21 @@ public class Transaction {
 	 */
 	public Transaction(Long id, BigDecimal balanceBefore, BigDecimal balanceAfter, Player player, LocalDateTime dateTime) {
 		this(id, player, balanceBefore, balanceAfter);
+		this.dateTime = dateTime;
+	}
+
+	/**
+	 * @param id
+	 * @param balanceBefore
+	 * @param balanceAfter
+	 * @param dateTime
+	 */
+	@Default
+	public Transaction(Long id, BigDecimal balanceBefore, BigDecimal balanceAfter, LocalDateTime dateTime) {
+		super();
+		this.id = id;
+		this.balanceBefore = balanceBefore;
+		this.balanceAfter = balanceAfter;
 		this.dateTime = dateTime;
 	}
 

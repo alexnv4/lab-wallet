@@ -5,6 +5,7 @@ import java.util.List;
 
 import liquibase.exception.DatabaseException;
 import ru.alexnv.apps.wallet.domain.dto.PlayerDto;
+import ru.alexnv.apps.wallet.domain.dto.TransactionDto;
 import ru.alexnv.apps.wallet.domain.mappers.PlayerMapper;
 import ru.alexnv.apps.wallet.domain.service.AuthorizationService;
 import ru.alexnv.apps.wallet.domain.service.PlayerOperationsService;
@@ -189,9 +190,9 @@ public class PlayerService {
 	/**
 	 * Получение списка выполненных транзакций игрока
 	 * 
-	 * @return список транзакций в виде текста
+	 * @return список транзакций в DTO
 	 */
-	public List<String> getTransactionsHistory() {
+	public List<TransactionDto> getTransactionsHistory() {
 		Action action = new Action(authorizationService.getPlayer(), "запрос игроком списка транзакций");
 		audit.addAction(action);
 

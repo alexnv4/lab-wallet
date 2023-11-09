@@ -24,6 +24,7 @@
 		<jackson-version>2.15.3</jackson-version>
 		<mapstruct-version>1.5.5.Final</mapstruct-version>
 		<jakarta.validation-api-version>3.0.2</jakarta.validation-api-version>
+		<argon2-jvm-version>2.11</argon2-jvm-version>
 		<jakarta.ws.rs-api-version>3.1.0</jakarta.ws.rs-api-version>
 		<m2e.apt.activation>jdt_apt</m2e.apt.activation>
 		<aspectj.version>1.9.20.1</aspectj.version>
@@ -111,6 +112,12 @@
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>
 			<version>${jakarta.validation-api-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.mkammerer</groupId>
+			<artifactId>argon2-jvm</artifactId>
+			<version>${argon2-jvm-version}</version>
 		</dependency>
 
 		<dependency>

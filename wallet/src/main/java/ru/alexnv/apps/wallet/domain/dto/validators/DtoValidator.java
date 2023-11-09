@@ -21,8 +21,12 @@ import ru.alexnv.apps.wallet.domain.dto.AbstractDto;
  */
 public class DtoValidator extends AbstractDtoValidator {
 
+	/** Список нарушений валидации. */
 	private List<String> violations;
 
+	/**
+	 * Создание DTO валидатора.
+	 */
 	public DtoValidator() {
 		violations = new ArrayList<>();
 	}
@@ -67,8 +71,15 @@ public class DtoValidator extends AbstractDtoValidator {
 					int min = sizeAnno.min();
 					int max = sizeAnno.max();
 
-					String fieldString = (String) fieldValue;
-					int fieldSize = fieldString.length();
+					int fieldSize = 0;
+					if (!(fieldValue instanceof String)) {
+						char[] fieldChars = (char[]) fieldValue;
+						fieldSize = fieldChars.length;
+					} else {
+						String fieldString = (String) fieldValue;
+						fieldSize = fieldString.length();
+					}
+
 					if (fieldSize < min || fieldSize > max) {
 						violations.add(sizeAnno.message());
 					}

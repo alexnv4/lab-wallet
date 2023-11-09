@@ -17,19 +17,17 @@ import ru.alexnv.apps.wallet.domain.model.Transaction;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.TransactionIdNotUniqueException;
 import ru.alexnv.apps.wallet.infrastructure.dao.DaoException;
+import ru.alexnv.apps.wallet.infrastructure.dao.NotFoundException;
+import ru.alexnv.apps.wallet.infrastructure.dao.NotUniqueException;
 import ru.alexnv.apps.wallet.infrastructure.dao.PlayerDao;
 import ru.alexnv.apps.wallet.infrastructure.dao.TransactionDao;
+import ru.alexnv.apps.wallet.service.exceptions.FindPlayerByIdException;
 
 /**
  * Сервис предметной области для вариантов использования пользователем
  */
 public class PlayerOperationsService {
-	
-	/**
-	 * Сервис авторизации, устанавливается инжектором
-	 */
-	private final AuthorizationService authorizationService;
-	
+
 	/**
 	 * Реализация DAO игрока, устанавливается инжектором
 	 */
@@ -47,10 +45,8 @@ public class PlayerOperationsService {
 	 * @param playerDao DAO игрока
 	 * @param transactionDao DAO транзакции
 	 */
-	public PlayerOperationsService(AuthorizationService authorizationService,
-			PlayerDao playerDao, TransactionDao transactionDao) {
+	public PlayerOperationsService(PlayerDao playerDao, TransactionDao transactionDao) {
 		this.playerDao = playerDao;
-		this.authorizationService = authorizationService;
 		this.transactionDao = transactionDao;
 	}
 	
@@ -58,29 +54,43 @@ public class PlayerOperationsService {
 	 * Кредит игрока с добавлением информации в БД
 	 * Для вызова метода player не должен быть null
 	 * 
+	 * @param playerId ID игрока 
 	 * @param amount количество средств
 	 * @param transactionId идентификатор транзакции
 	 * @return DTO игрока
 	 * @throws DatabaseException ошибка работы с базой данных
 	 * @throws TransactionIdNotUniqueException транзакция не уникальная
+	 * @throws FindPlayerByIdException игрок с таким ID не найден
 	 */
-	public PlayerDto creditPlayer(BigDecimal amount, Long transactionId) throws DatabaseException, TransactionIdNotUniqueException {
-		Player player = authorizationService.getPlayer();
-		if (player == null) {
-			System.err.println("Попытка кредита незалогиненного игрока.");
-			return null;
+	public PlayerDto creditPlayer(Long playerId, BigDecimal amount, Long transactionId) throws TransactionIdNotUniqueException, FindPlayerByIdException, DatabaseException {
+		Player player;
+		try {
+			player = playerDao.findById(playerId);
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+			throw new FindPlayerByIdException("Игрок с ID=" + playerId + " в БД не найден " + e.getMessage());
+		} catch (DaoException e) {
+			e.printStackTrace();
+			throw new DatabaseException(e.getMessage());
 		}
 		
+		BigDecimal oldBalance = player.getBalanceNumeric();
+		BigDecimal newBalance = oldBalance.add(amount);
 		try {
-			Transaction transaction = transactionDao.findById(transactionId); // ID не уникален
-			throw new TransactionIdNotUniqueException("Транзакция " + transaction.getId() + " не уникальна.");
-		} catch (DaoException e) { // Транзакция не найдена, регистрируем новую
-			BigDecimal oldBalance = player.getBalanceNumeric();
-			BigDecimal newBalance = oldBalance.add(amount);
-			registerTransaction(transactionId, oldBalance, newBalance);
-			player.setBalance(newBalance);
-
-			updatePlayerTransaction();
+			Player tempPlayer = player.clone();
+			createTransaction(tempPlayer, transactionId, oldBalance, newBalance);
+			tempPlayer.setBalance(newBalance);
+			
+			updatePlayerTransaction(tempPlayer);
+			
+			player = tempPlayer;
+		} catch (NotUniqueException e) {
+			throw new TransactionIdNotUniqueException(e.getMessage());
+		} catch (DaoException e) {
+			e.printStackTrace();
+			throw new DatabaseException(e.getMessage());
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
 		}
 		
 		return PlayerMapper.INSTANCE.toDto(player); 
@@ -92,47 +102,65 @@ public class PlayerOperationsService {
 	 * Операция записывается в БД
 	 * Для вызова метода player не должен быть null
 	 * 
+	 * @param playerId ID игрока 
 	 * @param amount количество средств
 	 * @param transactionId идентификатор транзакции 
 	 * @return DTO игрока
 	 * @throws NoMoneyLeftException столько средств нет
 	 * @throws DatabaseException ошибка работы с базой данных
 	 * @throws TransactionIdNotUniqueException транзакция не уникальная
+	 * @throws FindPlayerByIdException игрок с таким ID не найден
 	 */
-	public PlayerDto debitPlayer(BigDecimal amount, Long transactionId)
-			throws NoMoneyLeftException, DatabaseException, TransactionIdNotUniqueException {
-		Player player = authorizationService.getPlayer();
-		if (player == null) {
-			System.err.println("Попытка дебета незалогиненного игрока.");
-			return null;
+	public PlayerDto debitPlayer(Long playerId, BigDecimal amount, Long transactionId)
+			throws NoMoneyLeftException, DatabaseException, TransactionIdNotUniqueException, FindPlayerByIdException {
+		Player player;
+		try {
+			player = playerDao.findById(playerId);
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+			throw new FindPlayerByIdException("Игрок с ID=" + playerId + " в БД не найден " + e.getMessage());
+		} catch (DaoException e) {
+			e.printStackTrace();
+			throw new DatabaseException(e.getMessage());
 		}
 		
 		BigDecimal oldBalance = player.getBalanceNumeric();
 		if (oldBalance.compareTo(amount) < 0) {
 			throw new NoMoneyLeftException("Недостаточно средств для снятия.");
 		}
+		BigDecimal newBalance = oldBalance.subtract(amount);
 		
 		try {
-			Transaction transaction = transactionDao.findById(transactionId); // ID не уникален
-			throw new TransactionIdNotUniqueException("Транзакция " + transaction.getId() + " не уникальна.");
-		} catch (DaoException e) { // Транзакция не найдена, регистрируем новую
-			BigDecimal newBalance = oldBalance.subtract(amount);
-			registerTransaction(transactionId, oldBalance, newBalance);
-			player.setBalance(newBalance);
+			Player tempPlayer = player.clone();
+			createTransaction(tempPlayer, transactionId, oldBalance, newBalance);
+			tempPlayer.setBalance(newBalance);
 			
-			updatePlayerTransaction();
+			createTransaction(player, transactionId, oldBalance, newBalance);
+			player.setBalance(newBalance);
+
+			updatePlayerTransaction(tempPlayer);
+			
+			player = tempPlayer;
+		} catch (NotUniqueException e) {
+			throw new TransactionIdNotUniqueException(e.getMessage());
+		} catch (DaoException e) {
+			throw new DatabaseException(e.getMessage());
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
 		}
 
 		return PlayerMapper.INSTANCE.toDto(player); 
 	}
 
 	/**
+	 * @param playerId ID игрока
 	 * @return список транзакций в виде текста
 	 * @throws DatabaseException ошибка работы с базой данных
 	 */
-	public List<TransactionDto> getTransactionsHistory() throws DatabaseException {
-		Player player = authorizationService.getPlayer();
+	public List<TransactionDto> getTransactionsHistory(Long playerId) throws DatabaseException {
 		try {
+			Player player = playerDao.findById(playerId);
+			
 			// Загрузить с базы List транзакций на игрока
 			List<Transaction> transactions = transactionDao.getAllWithPlayerId(player.getId());
 
@@ -148,39 +176,62 @@ public class PlayerOperationsService {
 			
 			return transactionsDto;
 
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+			throw new DatabaseException("Игрок с ID=" + playerId + " в БД не найден " + e.getMessage());
 		} catch (DaoException e) {
 			throw new DatabaseException("Ошибка работы с БД " + e.getMessage());
 		}
 	}
 	
 	/**
-	 * @throws DatabaseException ошибка работы с базой данных
+	 * Получение баланса игрока. Баланс передаётся в виде поля в DTO игрока.
+	 *
+	 * @param playerId идентификатор игрока
+	 * @return DTO игрока с балансом
+	 * @throws DatabaseException ошибка работы с БД
 	 */
-	private void updatePlayerTransaction() throws DatabaseException {
-		Player player = authorizationService.getPlayer();
+	public PlayerDto getBalance(Long playerId) throws DatabaseException {
+		PlayerDto playerDto;
+		Player player = null;
+		
 		try {
-			// Обновление баланса игрока в базе
-			playerDao.update(player);
-
-			// Добавление транзакции в базу
-			transactionDao.insert(player.getLastTransaction());
-
+			player = playerDao.findById(playerId);
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+			throw new DatabaseException("Игрок с ID=" + playerId + " в БД не найден " + e.getMessage());
 		} catch (DaoException e) {
+			e.printStackTrace();
 			throw new DatabaseException("Ошибка работы с БД " + e.getMessage());
 		}
+		playerDto = PlayerMapper.INSTANCE.toDto(player);
+		
+		return playerDto;
+	}
+	
+	/**
+	 * @param player игрок
+	 * @throws DaoException ошибка работы с БД
+	 */
+	private void updatePlayerTransaction(Player player) throws DaoException {
+		// Добавление транзакции в базу
+		transactionDao.insert(player.getLastTransaction());
+		
+		// Обновление баланса игрока в базе
+		playerDao.update(player);
 	}
 	
 	/**
 	 * Создание новой транзакции и её добавление в список игрока
 	 * 
+	 * @param player игрок 
 	 * @param transactionId предоставленный идентификатор транзакции 
 	 * @param balanceBefore баланс до транзакции
 	 * @param balanceAfter баланс после транзакции
 	 * @param description описание транзакции
 	 * @return транзакция
 	 */
-	private Transaction registerTransaction(Long transactionId, BigDecimal balanceBefore, BigDecimal balanceAfter) {
-		Player player = authorizationService.getPlayer();
+	private Transaction createTransaction(Player player, Long transactionId, BigDecimal balanceBefore, BigDecimal balanceAfter) {
 		Transaction transaction = new Transaction(transactionId, player, balanceBefore, balanceAfter);
 		player.addTransaction(transaction);
 		return transaction;

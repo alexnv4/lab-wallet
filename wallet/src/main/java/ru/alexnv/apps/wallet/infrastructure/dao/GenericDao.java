@@ -9,6 +9,9 @@ import java.util.List;
  * @param <PK>
  */
 public interface GenericDao<T, PK> {
+	
+	/** Код ошибки - нарушение уникальности поля в БД */
+	static final String UNIQUE_VIOLATION_ERROR_CODE = "23505";
 
 	/**
 	 * Добавление в БД
@@ -36,9 +39,10 @@ public interface GenericDao<T, PK> {
 	/**
 	 * @param PK идентификатор 
 	 * @return объект, соответствующий идентификатору
-	 * @throws DaoException
+	 * @throws NotFoundException не найдено в БД
+	 * @throws DaoException ошибка работы с БД
 	 */
-	T findById(long PK) throws DaoException;
+	T findById(long PK) throws NotFoundException, DaoException;
 
 	/**
 	 * @return список всех объектов

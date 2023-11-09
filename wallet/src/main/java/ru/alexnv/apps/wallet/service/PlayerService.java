@@ -1,6 +1,7 @@
 package ru.alexnv.apps.wallet.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import liquibase.exception.DatabaseException;
@@ -17,7 +18,10 @@ import ru.alexnv.apps.wallet.domain.service.exceptions.PlayerAlreadyExistsExcept
 import ru.alexnv.apps.wallet.domain.service.exceptions.TransactionIdNotUniqueException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.WrongPasswordException;
 import ru.alexnv.apps.wallet.infrastructure.dao.AuditorDao;
-import ru.alexnv.apps.wallet.service.exceptions.*;
+import ru.alexnv.apps.wallet.service.exceptions.AuthorizationException;
+import ru.alexnv.apps.wallet.service.exceptions.DebitException;
+import ru.alexnv.apps.wallet.service.exceptions.FindPlayerByIdException;
+import ru.alexnv.apps.wallet.service.exceptions.RegistrationException;
 
 /**
  * Сервис игрока
@@ -70,14 +74,14 @@ public class PlayerService {
 	 * @return DTO игрока
 	 * @throws AuthorizationException - если авторизация не удалась
 	 */
-	public PlayerDto authorize(String login, String password) throws AuthorizationException {
+	public PlayerDto authorize(String login, char[] password) throws AuthorizationException {
 		Action action = null;
 		PlayerDto playerDto = null;
 
 		try {
 			playerDto = PlayerMapper.INSTANCE.toDto(authorizationService.authorize(login, password));
 
-			action = new Action(authorizationService.getPlayer(), "игрок " + login + " вошёл в кошелёк");
+			action = new Action(playerDto, "игрок " + login + " вошёл в кошелёк");
 		} catch (NoSuchPlayerException | WrongPasswordException | DatabaseException | LoginRepeatException e) {
 			action = new Action("попытка входа игрока " + login + " в кошелёк");
 
@@ -98,7 +102,7 @@ public class PlayerService {
 	 * @return логин
 	 * @throws RegistrationException - если регистрация не удалась
 	 */
-	public String registration(String login, String password) throws RegistrationException {
+	public String registration(String login, char[] password) throws RegistrationException {
 		Action action = null;
 
 		try {
@@ -119,43 +123,46 @@ public class PlayerService {
 	/**
 	 * Запрос баланса игрока
 	 * 
+	 * @param playerId ID игрока 
 	 * @return баланс в формате строки
+	 * @throws FindPlayerByIdException игрок с таким ID не найден
 	 */
-	public PlayerDto getBalance() {
-		Action action = new Action(authorizationService.getPlayer(), "запрос баланса");
-		audit.addAction(action);
-
-		PlayerDto playerDto = PlayerMapper.INSTANCE.toDto(authorizationService.getPlayer());
+	public PlayerDto getBalance(Long playerId) throws FindPlayerByIdException {
+		Action action;
+		PlayerDto playerDto;
+		
+		try {
+			playerDto = playerOperationsService.getBalance(playerId);
+			
+			action = new Action(playerDto, "запрос баланса");
+			audit.addAction(action);
+		} catch (DatabaseException e) {
+			e.printStackTrace();
+			throw new FindPlayerByIdException(e.getMessage());
+		}
 		return playerDto;
-	}
-
-	/**
-	 * Выход игрока из кошелька
-	 */
-	public void logout() {
-		Action action = new Action(authorizationService.getPlayer(), "выход из аккаунта");
-		audit.addAction(action);
-
-		authorizationService.setPlayer(null);
 	}
 
 	/**
 	 * Кредит на игрока
 	 * 
+	 * @param playerId ID игрока 
 	 * @param balance добавление баланса
 	 * @param transactionId предоставленный идентификатор транзакции
 	 * @return DTO игрока
 	 * @throws TransactionIdNotUniqueException идентификатор транзакции не уникальный
+	 * @throws FindPlayerByIdException игрок с таким ID не найден
 	 */
-	public PlayerDto credit(BigDecimal balance, Long transactionId) throws TransactionIdNotUniqueException {
+	public PlayerDto credit(Long playerId, BigDecimal balance, Long transactionId) throws TransactionIdNotUniqueException, FindPlayerByIdException {
 		PlayerDto playerDto = null;
+		
 		try {
-			playerDto = playerOperationsService.creditPlayer(balance, transactionId);
+			playerDto = playerOperationsService.creditPlayer(playerId, balance, transactionId);
 		} catch (DatabaseException e) {
 			e.printStackTrace();
 		}
 
-		Action action = new Action(authorizationService.getPlayer(), "кредит игрока на сумму " + balance.toString());
+		Action action = new Action(playerDto, "кредит игрока на сумму " + balance.toString());
 		audit.addAction(action);
 		
 		return playerDto;
@@ -164,20 +171,23 @@ public class PlayerService {
 	/**
 	 * Дебет на игрока
 	 * 
+	 * @param playerId ID игрока
 	 * @param balance уменьшение баланса
 	 * @param transactionId идентификатор транзакции
 	 * @return DTO игрока
 	 * @throws TransactionIdNotUniqueException идентификатор транзакции не уникальный
 	 * @throws DebitException ошибка дебета
+	 * @throws FindPlayerByIdException игрок с таким ID не найден
 	 */
-	public PlayerDto debit(BigDecimal balance, Long transactionId) throws TransactionIdNotUniqueException, DebitException {
-		PlayerDto playerDto = null;
-		Action action = new Action(authorizationService.getPlayer(),
-				"попытка дебета игрока на сумму " + balance.toString());
+	public PlayerDto debit(Long playerId, BigDecimal balance, Long transactionId) throws TransactionIdNotUniqueException, DebitException, FindPlayerByIdException {
+		PlayerDto playerDto = new PlayerDto();
+		playerDto.setId(playerId);
+		
+		Action action = new Action(playerDto, "попытка дебета игрока на сумму " + balance.toString());
 		
 		try {
-			playerDto = playerOperationsService.debitPlayer(balance, transactionId);
-			action = new Action(authorizationService.getPlayer(), "дебет игрока на сумму " + balance.toString());
+			playerDto = playerOperationsService.debitPlayer(playerId, balance, transactionId);
+			action = new Action(playerDto, "дебет игрока на сумму " + balance.toString());
 		} catch (NoMoneyLeftException | DatabaseException e) {
 			throw new DebitException(e.getMessage());
 		} finally {
@@ -190,16 +200,21 @@ public class PlayerService {
 	/**
 	 * Получение списка выполненных транзакций игрока
 	 * 
+	 * @param playerId ID игрока
 	 * @return список транзакций в DTO
+	 * @throws FindPlayerByIdException игрок с таким ID не найден
 	 */
-	public List<TransactionDto> getTransactionsHistory() {
-		Action action = new Action(authorizationService.getPlayer(), "запрос игроком списка транзакций");
+	public List<TransactionDto> getTransactionsHistory(Long playerId) throws FindPlayerByIdException {
+		PlayerDto playerDto = new PlayerDto();
+		playerDto.setId(playerId);
+		
+		Action action = new Action(playerDto, "запрос игроком списка транзакций");
 		audit.addAction(action);
 
 		try {
-			return playerOperationsService.getTransactionsHistory();
+			return playerOperationsService.getTransactionsHistory(playerId);
 		} catch (DatabaseException e) {
-			return null;
+			return new ArrayList<>();
 		}
 	}
 

@@ -61,7 +61,7 @@ public class AppContextListener implements ServletContextListener {
 	private void inject(ServletContextEvent sce, DaoFactory daoFactory, Connection connection) {
 		final AuthorizationService authorizationService = new AuthorizationService(daoFactory.getPlayerDao(connection));
 		final RegistrationService registrationService = new RegistrationService(daoFactory.getPlayerDao(connection));
-		final PlayerOperationsService playerOperationsService = new PlayerOperationsService(authorizationService,
+		final PlayerOperationsService playerOperationsService = new PlayerOperationsService(
 				daoFactory.getPlayerDao(connection), daoFactory.getTransactionDao(connection));
 		final PlayerService playerService = new PlayerService(authorizationService, registrationService,
 				playerOperationsService, daoFactory.getAuditorDao(connection));

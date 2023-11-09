@@ -9,13 +9,13 @@
     	    <column name="player_id" type="BIGINT" defaultValueSequenceNext="player_id_sequence">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="login" type="VARCHAR(20)">
+            <column name="login" type="character varying(20)">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="password" type="VARCHAR(32)">>
+            <column name="password" type="VARCHAR(128)">>
                 <constraints nullable="false"/>
             </column>
-            <column name="balance" type="NUMERIC"/>
+            <column name="balance" type="DECIMAL(9, 2)"/>
     	</createTable>
     </changeSet>
     
@@ -24,8 +24,8 @@
     	    <column name="transaction_id" type="BIGINT">
                 <constraints primaryKey="true" unique="true" nullable="false"/>
             </column>
-            <column name="balance_before" type="NUMERIC"/>
-            <column name="balance_after" type="NUMERIC"/>
+            <column name="balance_before" type="DECIMAL(9, 2)"/>
+            <column name="balance_after" type="DECIMAL(9, 2)"/>
             <column name="date" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>

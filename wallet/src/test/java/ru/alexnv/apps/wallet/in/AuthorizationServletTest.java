@@ -42,7 +42,7 @@ class AuthorizationServletTest {
 		String inputJson = """
 				{
 				  "login": "mylogin6",
-				  "password": "mypass6"
+				  "password": "mypass6111"
 				}
 				""";
 		
@@ -69,7 +69,9 @@ class AuthorizationServletTest {
 
         // Mock playerService.authorize
         when(playerDto.getLogin()).thenReturn("mylogin6");
-		when(playerService.authorize("mylogin6", "mypass6")).thenReturn(playerDto);
+        char[] zeroPassword = new char[] { '0' };
+        when(playerDto.getPassword()).thenReturn(zeroPassword);
+		when(playerService.authorize("mylogin6", "mypass6111".toCharArray())).thenReturn(playerDto);
 
         // Вызываем метод doPost
         authorizationServlet.doPost(request, response);
@@ -82,7 +84,7 @@ class AuthorizationServletTest {
 				{
 				  "id": 0,
 				  "login": "mylogin6",
-				  "password": null,
+				  "password": "0",
 				  "balance": null
 				}
 				""";
@@ -125,13 +127,13 @@ class AuthorizationServletTest {
 		when(sg.getAttribute("PlayerService")).thenReturn(playerService);
 		
 		// Mock playerService.authorize, вызываем исключение AuthorizationException
-		when(playerService.authorize("mylogin6", "mypassword999")).thenThrow(AuthorizationException.class);
+		when(playerService.authorize("mylogin6", "mypassword999".toCharArray())).thenThrow(AuthorizationException.class);
 
 		// Вызываем метод doPost
 		authorizationServlet.doPost(request, response);
 
 		// Когда выполнится регистрация 
-		Executable executable = () -> playerService.authorize("mylogin6", "mypassword999");
+		Executable executable = () -> playerService.authorize("mylogin6", "mypassword999".toCharArray());
 		
 		// Проверяем, что бросилось исключение
 		assertThrows(AuthorizationException.class, executable);
@@ -174,7 +176,7 @@ class AuthorizationServletTest {
 
         // Mock playerService.authorize
         when(playerDto.getLogin()).thenReturn("mylogin6");
-		when(playerService.authorize("mylogin6", "mypassword999")).thenReturn(playerDto);
+		when(playerService.authorize("mylogin6", "mypassword999".toCharArray())).thenReturn(playerDto);
 		doThrow(InvalidKeyException.class).when(jwt).generate();
 		when(authorizationServlet.createJWT(any())).thenReturn(jwt);
 
@@ -225,7 +227,7 @@ class AuthorizationServletTest {
 
         // Mock playerService.authorize
         when(playerDto.getLogin()).thenReturn("mylogin6");
-		when(playerService.authorize("mylogin6", "mypassword999")).thenReturn(playerDto);
+		when(playerService.authorize("mylogin6", "mypassword999".toCharArray())).thenReturn(playerDto);
 		doThrow(NoSuchAlgorithmException.class).when(jwt).generate();
 		when(authorizationServlet.createJWT(any())).thenReturn(jwt);
 
@@ -276,7 +278,7 @@ class AuthorizationServletTest {
 
         // Mock playerService.authorize
         when(playerDto.getLogin()).thenReturn("mylogin6");
-		when(playerService.authorize("mylogin6", "mypassword999")).thenReturn(playerDto);
+		when(playerService.authorize("mylogin6", "mypassword999".toCharArray())).thenReturn(playerDto);
 		doThrow(JsonProcessingException.class).when(jwt).generate();
 		when(authorizationServlet.createJWT(any())).thenReturn(jwt);
 

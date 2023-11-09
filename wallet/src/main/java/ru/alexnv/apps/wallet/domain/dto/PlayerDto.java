@@ -18,13 +18,13 @@ public class PlayerDto extends AbstractDto {
 
 	/** Логин пользователя. */
 	@NotNull(message = "Логин не должен быть пустым или не определённым")
-	@Size(min = 3, max = 20, message = "Логин должен быть не менее 3 символов и не более 20 символов.")
+	@Size(min = 2, max = 20, message = "Логин должен быть не менее 2 символов и не более 20 символов.")
 	private String login;
 
 	/** Пароль пользователя. */
 	@NotNull(message = "Пароль не должен быть пустым или не определённым")
-	@Size(min = 4, max = 32, message = "Пароль должен быть не менее 4 символов и не более 32 символов.")
-	private String password;
+	@Size(min = 8, max = 32, message = "Пароль должен быть не менее 8 символов и не более 32 символов.")
+	private char[] password;
 
 	/**
 	 * Баланс в формате 0.00
@@ -45,7 +45,7 @@ public class PlayerDto extends AbstractDto {
 	 * @param password пароль
 	 * @param balance баланс
 	 */
-	public PlayerDto(String login, String password, String balance) {
+	public PlayerDto(String login, char[] password, String balance) {
 		this.login = login;
 		this.password = password;
 		this.balance = balance;
@@ -66,7 +66,7 @@ public class PlayerDto extends AbstractDto {
 	 *
 	 * @return the password
 	 */
-	public String getPassword() {
+	public char[] getPassword() {
 		return password;
 	}
 
@@ -93,7 +93,7 @@ public class PlayerDto extends AbstractDto {
 	 *
 	 * @param password the password to set
 	 */
-	public void setPassword(String password) {
+	public void setPassword(char[] password) {
 		this.password = password;
 	}
 

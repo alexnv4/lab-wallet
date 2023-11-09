@@ -114,7 +114,7 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
 	 * @param request запрос
 	 * @return идентификатор игрока из ресурса
 	 */
-	private Long getPlayerIdFromURI(HttpServletRequest request) {
+	public static Long getPlayerIdFromURI(HttpServletRequest request) {
 		String pathInfo = request.getPathInfo();
 		String[] parts = pathInfo.split("/");
 		if (parts.length == 3 && parts[1].matches("\\d+")) {

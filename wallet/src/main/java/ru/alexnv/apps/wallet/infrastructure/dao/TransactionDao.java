@@ -17,7 +17,8 @@ public interface TransactionDao extends GenericDao<Transaction, Integer> {
 	 *
 	 * @param playerId идентификатор игрока
 	 * @return список транзакций игрока
+	 * @throws NotUniqueException ошибка уникальности транзакции
 	 * @throws DaoException ошибка работы с БД
 	 */
-	List<Transaction> getAllWithPlayerId(long playerId) throws DaoException;
+	List<Transaction> getAllWithPlayerId(long playerId) throws NotUniqueException, DaoException;
 }

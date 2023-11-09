@@ -3,6 +3,10 @@
  */
 package ru.alexnv.apps.wallet.infrastructure.dao;
 
+import java.io.CharArrayReader;
+import java.io.CharArrayWriter;
+import java.io.IOException;
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,6 +22,9 @@ import ru.alexnv.apps.wallet.domain.model.Player;
  * Реализация интерфейса DAO игрока
  */
 public class PlayerDaoImpl implements PlayerDao {
+	
+	/** Длина хэшированного пароля в БД. */
+	private static final int PASSWORD_LENGTH = 128;
 
 	/**
 	 * Установленное соединение
@@ -45,7 +52,10 @@ public class PlayerDaoImpl implements PlayerDao {
 
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 			statement.setString(1, player.getLogin());
-			statement.setString(2, player.getPassword());
+			
+			Reader reader = new CharArrayReader(player.getPassword());
+			statement.setCharacterStream(2, reader);
+			
 			statement.setBigDecimal(3, player.getBalanceNumeric());
 			int rowsAffected = statement.executeUpdate();
 			if (rowsAffected < 1) {
@@ -102,22 +112,26 @@ public class PlayerDaoImpl implements PlayerDao {
 	 * 
 	 * @param PK идентификатор игрока
 	 * @return найденный игрок
+	 * @throws NotFoundException игрок не найден в БД
 	 * @throws DaoException ошибка работы с БД
 	 */
-	public Player findById(long PK) throws DaoException {
-		final String sql = "SELECT * FROM wallet_schema.players WHERE id = ?;";
+	public Player findById(long PK) throws NotFoundException, DaoException {
+		final String sql = "SELECT player_id, login, balance FROM wallet_schema.players WHERE player_id=?;";
 
 		try (PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setLong(1, PK);
 			try (ResultSet resultSet = statement.executeQuery()) {
-				resultSet.next();
+				if (!resultSet.next()) {
+					throw new NotFoundException("Не найдено.");
+				}
 
 				long id = resultSet.getLong("player_id");
 				String login = resultSet.getString("login");
-				String password = resultSet.getString("password");
+				
 				BigDecimal balance = resultSet.getBigDecimal("balance");
 
-				Player player = new Player(id, login, password, balance);
+				Player player = new Player(id, login, new char[] { '0' }, balance);
+				
 				return player;
 			}
 		} catch (SQLException e) {
@@ -133,19 +147,19 @@ public class PlayerDaoImpl implements PlayerDao {
 	 * @throws DaoException ошибка работы с БД
 	 */
 	public List<Player> getAll() throws DaoException {
-		final String sql = "SELECT * FROM wallet_schema.players ORDER BY login;";
+		final String sql = "SELECT player_id, login, balance FROM wallet_schema.players ORDER BY login;";
 		List<Player> players = new ArrayList<>();
 
-		// try (PreparedStatement statement = connection.prepareStatement(sql);
 		try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(sql)) {
 
 			while (resultSet.next()) {
 				long id = resultSet.getLong("player_id");
 				String login = resultSet.getString("login");
-				String password = resultSet.getString("password");
+
 				BigDecimal balance = resultSet.getBigDecimal("balance");
 
-				Player player = new Player(id, login, password, balance);
+				Player player = new Player(id, login, new char[] { '0' }, balance);
+				
 				players.add(player);
 			}
 
@@ -153,6 +167,61 @@ public class PlayerDaoImpl implements PlayerDao {
 		} catch (SQLException e) {
 			throw new DaoException("Ошибка получения всех игроков: ", e);
 		}
+	}
+	
+	@Override
+	/**
+	 * Поиск игрока по идентификатору в БД.
+	 *
+	 * @param login логин
+	 * @return найденный игрок
+	 * @throws NotFoundException игрок не найден в БД
+	 * @throws DaoException ошибка работы с БД
+	 */
+	public Player findByLogin(String login) throws NotFoundException, DaoException {
+		final String sql = "SELECT player_id, login, password, balance FROM wallet_schema.players WHERE login=?;";
+
+		try (PreparedStatement statement = connection.prepareStatement(sql)) {
+			statement.setString(1, login);
+			try (ResultSet resultSet = statement.executeQuery()) {
+				if (!resultSet.next()) {
+					throw new NotFoundException("Не найдено.");
+				}
+
+				Long id = resultSet.getLong("player_id");
+				
+				Reader reader = resultSet.getCharacterStream("password");
+				char[] passwordHash = readPassword(reader);
+				
+				BigDecimal balance = resultSet.getBigDecimal("balance");
+
+				Player player = new Player(id, login, passwordHash, balance);
+				
+				return player;
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new DaoException("Ошибка чтения хэша пароля. ", e);
+			}
+		} catch (SQLException e) {
+			throw new DaoException("Ошибка поиска игрока: ", e);
+		}
+	}
+	
+	/**
+	 * Получение пароля в виде массива символов.
+	 *
+	 * @param reader the reader
+	 * @return пароль char[]
+	 * @throws IOException ошибка ввода-вывода
+	 */
+	private char[] readPassword(Reader reader) throws IOException {
+        CharArrayWriter charWriter = new CharArrayWriter();
+        char[] buffer = new char[PASSWORD_LENGTH];
+        int bytesRead;
+        while ((bytesRead = reader.read(buffer)) != -1) {
+            charWriter.write(buffer, 0, bytesRead);
+        }
+        return charWriter.toCharArray();
 	}
 
 }

@@ -72,7 +72,7 @@ class RegistrationServletTest {
         when(sg.getAttribute("PlayerService")).thenReturn(playerService);
 
         // Mock playerService.register
-		when(playerService.registration("someLogin", "somePassword")).thenReturn("someLogin");
+		when(playerService.registration("someLogin", "somePassword".toCharArray())).thenReturn("someLogin");
         
         // Вызываем метод doPost
         registerServlet.doPost(request, response);
@@ -85,7 +85,7 @@ class RegistrationServletTest {
 				{
 				  "id": null,
 				  "login": "someLogin",
-				  "password": "somePassword",
+				  "password": "0",
 				  "balance": null
 				}
 				""";
@@ -127,13 +127,13 @@ class RegistrationServletTest {
 		when(sg.getAttribute("PlayerService")).thenReturn(playerService);
 		
 		// Mock регистрации, вызываем исключение RegistrationException
-		when(playerService.registration("someLogin", "somePassword")).thenThrow(RegistrationException.class);
+		when(playerService.registration("someLogin", "somePassword".toCharArray())).thenThrow(RegistrationException.class);
 
 		// Вызываем метод doPost
 		registerServlet.doPost(request, response);
 
 		// Когда выполнится регистрация 
-		Executable executable = () -> playerService.registration("someLogin", "somePassword");
+		Executable executable = () -> playerService.registration("someLogin", "somePassword".toCharArray());
 		
 		// Проверяем, что бросилось исключение
 		assertThrows(RegistrationException.class, executable);
@@ -146,7 +146,7 @@ class RegistrationServletTest {
 				{
 				  "id": null,
 				  "login": "someLogin",
-				  "password": "somePassword",
+				  "password": "0",
 				  "balance": null
 				}
 				""";

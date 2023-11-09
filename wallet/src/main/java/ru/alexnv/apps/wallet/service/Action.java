@@ -2,7 +2,7 @@ package ru.alexnv.apps.wallet.service;
 
 import java.time.LocalDateTime;
 
-import ru.alexnv.apps.wallet.domain.model.Player;
+import ru.alexnv.apps.wallet.domain.dto.PlayerDto;
 
 /**
  * Действие, сохраняемое при аудите
@@ -12,7 +12,7 @@ public class Action {
 	/**
 	 * Текущий игрок
 	 */
-	private Player player;
+	private PlayerDto playerDto;
 
 	/**
 	 * Описание совершенного действия
@@ -27,11 +27,11 @@ public class Action {
 	/**
 	 * Создание действия игрока с описанием
 	 * 
-	 * @param player игрок
+	 * @param playerDto DTO игрока
 	 * @param description описание действия
 	 */
-	public Action(Player player, String description) {
-		this.player = player;
+	public Action(PlayerDto playerDto, String description) {
+		this.playerDto = playerDto;
 		this.description = description;
 		this.dateTime = LocalDateTime.now();
 	}
@@ -46,17 +46,17 @@ public class Action {
 	}
 
 	/**
-	 * @return the player
+	 * @return DTO игрока
 	 */
-	public Player getPlayer() {
-		return player;
+	public PlayerDto getPlayerDto() {
+		return playerDto;
 	}
 
 	/**
-	 * @param player the player to set
+	 * @param playerDto DTO игрока
 	 */
-	public void setPlayer(Player player) {
-		this.player = player;
+	public void setPlayer(PlayerDto playerDto) {
+		this.playerDto = playerDto;
 	}
 
 	/**

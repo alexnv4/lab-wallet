@@ -1,24 +1,22 @@
 package ru.alexnv.apps.wallet.domain.service;
 
-import java.util.List;
+import java.util.Arrays;
 
 import liquibase.exception.DatabaseException;
 import ru.alexnv.apps.wallet.domain.model.Player;
 import ru.alexnv.apps.wallet.domain.service.exceptions.LoginRepeatException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoSuchPlayerException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.WrongPasswordException;
+import ru.alexnv.apps.wallet.infrastructure.Argon2Hasher;
+import ru.alexnv.apps.wallet.infrastructure.PasswordHasher;
 import ru.alexnv.apps.wallet.infrastructure.dao.DaoException;
+import ru.alexnv.apps.wallet.infrastructure.dao.NotFoundException;
 import ru.alexnv.apps.wallet.infrastructure.dao.PlayerDao;
 
 /**
  * Сервис предметной области для авторизации пользователя в кошельке
  */
 public class AuthorizationService {
-
-	/**
-	 * Залогиненный игрок
-	 */
-	private Player player = null;
 
 	/**
 	 * Реализация DAO игрока, устанавливается инжектором
@@ -47,48 +45,32 @@ public class AuthorizationService {
 	 * @throws DatabaseException      - ошибка работы с БД
 	 * @throws LoginRepeatException   - повторный логин игрока
 	 */
-	public Player authorize(String login, String password)
+	public Player authorize(String login, char[] password)
 			throws NoSuchPlayerException, WrongPasswordException, DatabaseException, LoginRepeatException {
 		try {
-			List<Player> players = playerDao.getAll();
+			Player player = playerDao.findByLogin(login);
 
-			// Проверка логина и пароля игрока
-			for (Player player : players) {
-				if (player.getLogin().equals(login)) {
-					if (!password.equals(player.getPassword())) {
-						throw new WrongPasswordException("Неправильный пароль.");
-					}
-					if (this.player != null && this.player.getLogin().equals(player.getLogin())) {
-						throw new LoginRepeatException("Повторный логин игрока."); 
-					}
-					
-					// Логин игрока
-					this.setPlayer(player);
-					return this.player;
-				}
+			// Вычисление хэша и установка хэшированного пароля игроку
+			PasswordHasher hasher = new Argon2Hasher();
+			if (!hasher.verify(player.getPassword(), password)) {
+				throw new WrongPasswordException("Неправильный пароль.");
 			}
 
+			// Логин выполнился успешно
+			// Создаём новый пустой пароль с длиной 1 символ
+			char[] emptyPass = { '0' };
+			player.setPassword(emptyPass);
+
+			return player;
+			
+		} catch (NotFoundException e) {
+			throw new NoSuchPlayerException("Такого игрока не существует.");
 		} catch (DaoException e) {
 			throw new DatabaseException("Ошибка работы с БД " + e.getMessage());
+		} finally {
+			// Стираем изначально переданный пароль
+			Arrays.fill(password, '0');
 		}
-
-		throw new NoSuchPlayerException("Такого игрока не существует.");
-	}
-
-	/**
-	 * @return игрок
-	 */
-	public Player getPlayer() {
-		return player;
-	}
-
-	/**
-	 * Установка залогиненного игрока
-	 * 
-	 * @param player
-	 */
-	public void setPlayer(Player player) {
-		this.player = player;
 	}
 
 }

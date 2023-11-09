@@ -1,11 +1,14 @@
 package ru.alexnv.apps.wallet.domain.service;
 
-import java.util.List;
+import java.util.Arrays;
 
 import liquibase.exception.DatabaseException;
 import ru.alexnv.apps.wallet.domain.model.Player;
 import ru.alexnv.apps.wallet.domain.service.exceptions.PlayerAlreadyExistsException;
+import ru.alexnv.apps.wallet.infrastructure.Argon2Hasher;
+import ru.alexnv.apps.wallet.infrastructure.PasswordHasher;
 import ru.alexnv.apps.wallet.infrastructure.dao.DaoException;
+import ru.alexnv.apps.wallet.infrastructure.dao.NotFoundException;
 import ru.alexnv.apps.wallet.infrastructure.dao.PlayerDao;
 
 /**
@@ -39,39 +42,49 @@ public class RegistrationService {
 	 * @throws PlayerAlreadyExistsException - такой игрок уже существует
 	 * @throws DatabaseException            - ошибка работы с БД
 	 */
-	public Player register(String login, String password) throws PlayerAlreadyExistsException, DatabaseException {
-
+	public Player register(String login, char[] password) throws PlayerAlreadyExistsException, DatabaseException {
 		try {
-			List<Player> players = playerDao.getAll();
-
-			if (loginExists(players, login)) {
+			Player tempPlayer = readPlayer(login);
+			
+			if (tempPlayer != null) { // игрок уже зарегистрирован
 				throw new PlayerAlreadyExistsException("Такой игрок уже существует.");
 			}
+			
+			// Вычисление хэша и установка хэшированного пароля игроку
+			PasswordHasher hasher = new Argon2Hasher();
 
 			// Создание нового игрока и добавление в БД
-			Player player = new Player(login, password);
+			Player player = new Player(login, hasher.hashPassword(password));
 			player = playerDao.insert(player);
-			return player;
 
+			// Создаём новый пустой пароль с длиной 1 символ
+			char[] emptyPass = { '0' };
+			player.setPassword(emptyPass);
+			
+			return player;
+			
 		} catch (DaoException e) {
 			throw new DatabaseException("Ошибка работы с БД " + e.getMessage());
+		} finally {
+			// Стираем изначально переданный пароль
+			Arrays.fill(password, '0');
 		}
 	}
 
 	/**
-	 * Проверка на существование игрока с таким же логином
+	 * Проверка на существование игрока с таким логином в БД
 	 * 
-	 * @param players заполненный список игроков
-	 * @param login   пытающийся зарегистрироваться логин
-	 * @return существует или нет
+	 * @param login пытающийся зарегистрироваться логин
+	 * @return null - если не существует, Player - если существует
+	 * @throws DaoException ошибка работы с БД
 	 */
-	private boolean loginExists(List<Player> players, String login) {
-		for (Player player : players) {
-			if (login.equals(player.getLogin())) {
-				return true;
-			}
+	private Player readPlayer(String login) throws DaoException {
+		try {
+			Player player = playerDao.findByLogin(login);
+			return player;
+		} catch (NotFoundException e) {
+			return null;
 		}
-		return false;
 	}
 
 }

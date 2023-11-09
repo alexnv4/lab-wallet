@@ -44,8 +44,8 @@ public class AuditorDaoImpl implements AuditorDao {
 		try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 			statement.setString(1, action.getDescription());
 			statement.setObject(2, action.getDateTime());
-			if (action.getPlayer() != null) {
-				statement.setLong(3, action.getPlayer().getId());
+			if (action.getPlayerDto() != null) {
+				statement.setLong(3, action.getPlayerDto().getId());
 			} else {
 				statement.setNull(3, java.sql.Types.NULL);
 			}
@@ -58,8 +58,6 @@ public class AuditorDaoImpl implements AuditorDao {
 					throw new DaoException("Ошибка получения сгенерированного ID.");
 				}
 
-				// long id = resultSet.getInt(1);
-				// action.setId(id);
 				return action;
 			}
 		} catch (SQLException e) {

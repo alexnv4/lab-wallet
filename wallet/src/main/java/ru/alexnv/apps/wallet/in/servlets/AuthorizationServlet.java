@@ -96,6 +96,10 @@ public class AuthorizationServlet extends HttpServlet {
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
+		} finally {
+			// Стирание пароля в DTO независимо от результата авторизации
+			char[] zeroPassword = new char[] { '0' };
+			playerDto.setPassword(zeroPassword);
 		}
 		
 		// Отправка итогового DTO клиенту в JSON

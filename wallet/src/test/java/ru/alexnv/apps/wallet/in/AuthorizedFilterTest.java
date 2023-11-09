@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.*;
 
 import org.junit.jupiter.api.*;
@@ -54,9 +55,11 @@ class AuthorizedFilterTest {
 	final void should_returnRespondWith403_when_TokenFirstPartIncorrect() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2/balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer 123hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -65,17 +68,20 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(403, "Invalid access token");
+		verify(response, times(1)).setStatus(403);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
 	final void should_returnRespondWith403_when_TokenSignatureIncorrect() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2/balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.TAMPERED_SIGNATURE");
-
+		when(response.getWriter()).thenReturn(mockWriter);
+		
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
 
@@ -83,16 +89,19 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(403, "Invalid access token");
+		verify(response, times(1)).setStatus(403);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
 	final void should_returnRespondWith401_when_IdURINotEqualsTokenPayloadSubId() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/3/balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -101,16 +110,19 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
 	final void should_returnRespondWith401_when_IDNotNumber() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/two/balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -119,16 +131,19 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();		
 	}
 	
 	@Test
 	final void should_returnRespondWith401_when_IDNotSet() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("//balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -137,16 +152,19 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
 	final void should_returnRespondWith401_when_IDTypeDouble() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2.00/balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -155,16 +173,19 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
 	final void should_returnRespondWith401_when_URIEndsWithNotBalance() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2/balance/add");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -173,16 +194,19 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
 	final void should_returnRespondWith401_when_URIHasSeveralIDs() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2/2/balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -191,15 +215,18 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
 	final void should_returnRespondWith401_when_AuthorizationHeaderMissing() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2/balance/");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -208,16 +235,19 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
 	final void should_returnRespondWith401_when_AuthorizationHeaderNotStartWithBearer() throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2/balance/add");
 		when(request.getHeader("Authorization")).thenReturn("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
@@ -226,7 +256,8 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
@@ -234,9 +265,11 @@ class AuthorizedFilterTest {
 			throws IOException, ServletException, InvalidKeyException, NoSuchAlgorithmException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2/balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 		JSONWebToken jwt = mock(JSONWebToken.class);
 
 		// Создаём экземпляр JsonRequestFilter
@@ -254,7 +287,8 @@ class AuthorizedFilterTest {
 		assertThrows(InvalidKeyException.class, executable);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
@@ -262,9 +296,11 @@ class AuthorizedFilterTest {
 			throws IOException, ServletException, InvalidKeyException, NoSuchAlgorithmException {
 		FilterChain chain = mock(FilterChain.class);
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getPathInfo()).thenReturn("/2/balance");
 		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(response.getWriter()).thenReturn(mockWriter);
 		JSONWebToken jwt = mock(JSONWebToken.class);
 
 		// Создаём экземпляр JsonRequestFilter
@@ -282,7 +318,8 @@ class AuthorizedFilterTest {
 		assertThrows(NoSuchAlgorithmException.class, executable);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).sendError(401, "Invalid access token");
+		verify(response, times(1)).setStatus(401);
+		verify(mockWriter, times(1)).flush();
 	}
 
 }

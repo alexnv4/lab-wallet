@@ -144,10 +144,7 @@ class RegistrationServletTest {
 		// Проверяем возвращаемый JSON
 		String responseJson = """
 				{
-				  "id": null,
-				  "login": "someLogin",
-				  "password": "0",
-				  "balance": null
+				  "message": "null"
 				}
 				""";
 
@@ -168,9 +165,11 @@ class RegistrationServletTest {
 				}
 				""";
 		
+		PrintWriter mockWriter = mock(PrintWriter.class);
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
+        when(response.getWriter()).thenReturn(mockWriter);
 
         // Создаём экземпляр RegisterServlet
         RegisterServlet registerServlet = new RegisterServlet();
@@ -179,7 +178,8 @@ class RegistrationServletTest {
         registerServlet.doPost(request, response);
 
         // Проверяем статус код
-        verify(response, times(1)).sendError(400);
+        verify(response, times(1)).setStatus(400);
+        verify(mockWriter, times(1)).flush();        
 	}
 	
 	@Test
@@ -191,9 +191,11 @@ class RegistrationServletTest {
 				}
 				""";
 		
+		PrintWriter mockWriter = mock(PrintWriter.class);
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
+        when(response.getWriter()).thenReturn(mockWriter);
 
         // Создаём экземпляр RegisterServlet
         RegisterServlet registerServlet = new RegisterServlet();
@@ -202,7 +204,8 @@ class RegistrationServletTest {
         registerServlet.doPost(request, response);
 
         // Проверяем статус код
-        verify(response, times(1)).sendError(400);
+        verify(response, times(1)).setStatus(400);
+        verify(mockWriter, times(1)).flush();
 	}
 
 }

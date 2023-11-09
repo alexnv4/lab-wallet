@@ -244,17 +244,14 @@ class OperationsServletTest {
 		// Начальные mock
         ServletContext sg = mock(ServletContext.class);
         PlayerService playerService = mock(PlayerService.class);
+		PrintWriter mockWriter = mock(PrintWriter.class);
         
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/wallet/players/1/balance"));
         when(request.getPathInfo()).thenReturn("/1/balance");
-
-        // Создаём StringWriter для записи ответа
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter writer = new PrintWriter(stringWriter);
-        when(response.getWriter()).thenReturn(writer);
+        when(response.getWriter()).thenReturn(mockWriter);
 
         // Создаём экземпляр OperationsServlet
         OperationsServlet operationsServlet = spy(OperationsServlet.class);
@@ -276,7 +273,8 @@ class OperationsServletTest {
 		assertThrows(TransactionIdNotUniqueException.class, executable);
 
 		// Проверяем статус код
-		verify(response, times(1)).sendError(400);
+		verify(response, times(1)).setStatus(400);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
@@ -292,19 +290,15 @@ class OperationsServletTest {
 		// Начальные mock
         ServletContext sg = mock(ServletContext.class);
         PlayerService playerService = mock(PlayerService.class);
+		PrintWriter mockWriter = mock(PrintWriter.class);
         
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/wallet/players/1/balance"));
         when(request.getPathInfo()).thenReturn("/1/balance");
+		when(response.getWriter()).thenReturn(mockWriter);
         
-
-        // Создаём StringWriter для записи ответа
-        StringWriter stringWriter = new StringWriter();
-        PrintWriter writer = new PrintWriter(stringWriter);
-        when(response.getWriter()).thenReturn(writer);
-
         // Создаём экземпляр OperationsServlet
         OperationsServlet operationsServlet = spy(OperationsServlet.class);
 
@@ -325,7 +319,8 @@ class OperationsServletTest {
 		assertThrows(DebitException.class, executable);
 
 		// Проверяем статус код
-		verify(response, times(1)).sendError(400);
+		verify(response, times(1)).setStatus(400);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
@@ -337,11 +332,13 @@ class OperationsServletTest {
 				}
 				""";
 		
+		PrintWriter mockWriter = mock(PrintWriter.class);
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/wallet/players/1/balance"));
         when(request.getPathInfo()).thenReturn("/1/balance");
+		when(response.getWriter()).thenReturn(mockWriter);
 
         // Создаём экземпляр OperationsServlet
         OperationsServlet operationsServlet = new OperationsServlet();
@@ -350,7 +347,8 @@ class OperationsServletTest {
         operationsServlet.doPatch(request, response);
 
         // Проверяем статус код
-        verify(response, times(1)).sendError(400);
+        verify(response, times(1)).setStatus(400);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test
@@ -362,11 +360,13 @@ class OperationsServletTest {
 				}
 				""";
 		
+		PrintWriter mockWriter = mock(PrintWriter.class);
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
         when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/wallet/players/1/balance"));
         when(request.getPathInfo()).thenReturn("/1/balance");
+		when(response.getWriter()).thenReturn(mockWriter);
 
         // Создаём экземпляр OperationsServlet
         OperationsServlet operationsServlet = new OperationsServlet();
@@ -375,7 +375,8 @@ class OperationsServletTest {
         operationsServlet.doPatch(request, response);
 
         // Проверяем статус код
-        verify(response, times(1)).sendError(400);
+        verify(response, times(1)).setStatus(400);
+		verify(mockWriter, times(1)).flush();
 	}
 
 }

@@ -39,10 +39,12 @@ class JsonRequestFilterTest {
 	final void should_return400_when_PostContentTypeIsNotJson() throws IOException, ServletException {
 		String input = "NOT JSON";
 
+		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
 		when(request.getMethod()).thenReturn("POST");
 		when(request.getContentType()).thenReturn("text/plain");
 		when(request.getReader()).thenReturn(new BufferedReader(new StringReader(input)));
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		JsonRequestFilter jsonRequestFilter = new JsonRequestFilter();
@@ -51,14 +53,18 @@ class JsonRequestFilterTest {
 		jsonRequestFilter.doFilter(request, response, null);
 
 		// Проверяем статус код
-		verify(response, times(1)).sendError(400);
+		verify(response, times(1)).setStatus(400);
+		verify(mockWriter, times(1)).flush();
 	}
 
 	@Test
 	final void should_return400_when_PostContentTypeIsNull() throws IOException, ServletException {
+		PrintWriter mockWriter = mock(PrintWriter.class);
+		
 		// Задаём нужные параметры для запроса
 		when(request.getMethod()).thenReturn("POST");
 		when(request.getContentType()).thenReturn(null);
+		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
 		JsonRequestFilter jsonRequestFilter = new JsonRequestFilter();
@@ -67,7 +73,8 @@ class JsonRequestFilterTest {
 		jsonRequestFilter.doFilter(request, response, null);
 
 		// Проверяем статус код
-		verify(response, times(1)).sendError(400);
+		verify(response, times(1)).setStatus(400);
+		verify(mockWriter, times(1)).flush();
 	}
 	
 	@Test

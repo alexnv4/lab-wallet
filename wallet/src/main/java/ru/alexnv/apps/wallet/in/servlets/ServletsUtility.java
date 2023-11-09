@@ -22,6 +22,13 @@ import ru.alexnv.apps.wallet.in.Utility;
  */
 public class ServletsUtility {
 	
+	/** Шаблон ошибки JSON. */
+	public static String messageJson = """
+			{
+			  "message": %s
+			}
+			""";
+	
 	/**
 	 * Вспомогательный класс utility
 	 */
@@ -36,12 +43,14 @@ public class ServletsUtility {
 	 * @throws IOException ошибка ввода-вывода
 	 */
 	public void respondWithError(HttpServletResponse response, int statusCode, String reason) throws IOException {
-		response.sendError(statusCode);
+		String json = String.format(messageJson, "\"" + reason + "\"");
+		
+		sendJson(response, statusCode, json);
 		util.logMessage(reason);
 	}
 	
 	/**
-	 * Ответ с ошибкой.
+	 * Ответ с несколькими ошибками.
 	 * 
 	 * @param response ответ
 	 * @param statusCode статус код ответа
@@ -49,11 +58,27 @@ public class ServletsUtility {
 	 * @throws IOException ошибка ввода-вывода
 	 */
 	public void respondWithErrors(HttpServletResponse response, int statusCode, List<String> errors) throws IOException {
-		response.sendError(statusCode);
-		
 		for (String error : errors) {
 			util.logMessage(error);
 		}
+
+		String stringsArray = serializeToJson(errors);
+		
+		String json = String.format(messageJson, stringsArray.toString());
+		
+		sendJson(response, statusCode, json);
+	}
+
+	/**
+	 * Сериализация объекта в JSON
+	 * 
+	 * @param object объект для сериализации
+	 * @return строка в виде JSON
+	 * @throws JsonProcessingException ошибка обработки JSON
+	 */
+	private String serializeToJson(Object object) throws JsonProcessingException {
+		var mapper = new ObjectMapper();
+		return mapper.writeValueAsString(object);
 	}
 	
 	/**
@@ -67,11 +92,20 @@ public class ServletsUtility {
 	 */
 	protected void respondWithJson(HttpServletResponse response, int statusCode, Object object)
 			throws JsonProcessingException, IOException {
-		var mapper = new ObjectMapper();
-		// Сериализация объекта в JSON строку
-		String json = mapper.writeValueAsString(object);
+		String json = serializeToJson(object);
 
-		// Отправка JSON результата
+		sendJson(response, statusCode, json);
+	}
+
+	/**
+	 * Отправка JSON результата
+	 *  
+	 * @param response @see HttpServletResponse
+	 * @param statusCode статус код
+	 * @param json текст в виде JSON
+	 * @throws IOException ошибка ввода вывода
+	 */
+	private void sendJson(HttpServletResponse response, int statusCode, String json) throws IOException {
 		response.setStatus(statusCode);
 		response.setContentType(MediaType.APPLICATION_JSON);
 		response.setCharacterEncoding("UTF-8");

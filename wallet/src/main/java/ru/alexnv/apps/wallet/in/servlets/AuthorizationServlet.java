@@ -90,12 +90,16 @@ public class AuthorizationServlet extends HttpServlet {
 			responseCode = SC_OK;
 		} catch (AuthorizationException e) {
 			e.printStackTrace();
+			servletsUtil.respondWithError(response, responseCode, e.getMessage());
+			return;
 		} catch (InvalidKeyException e) {
 			e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
+			servletsUtil.respondWithError(response, responseCode, e.getMessage());
+			return;
 		} finally {
 			// Стирание пароля в DTO независимо от результата авторизации
 			char[] zeroPassword = new char[] { '0' };

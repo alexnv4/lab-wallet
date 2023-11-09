@@ -146,8 +146,11 @@ public class OperationsServlet extends HttpServlet {
 			// Определение типа операции
 			if (balanceChange.compareTo(BigDecimal.ZERO) > 0) {
 				playerDto = playerService.credit(playerId, balanceChange, transactionId);
-			} else {
+			} else if ((balanceChange.compareTo(BigDecimal.ZERO) < 0)) {
 				playerDto = playerService.debit(playerId, balanceChange.negate(), transactionId);
+			} else { // balanceChange = 0
+				servletsUtil.respondWithError(response, responseCode, "Изменение баланса не произведено. Введён ноль.");
+				return;
 			}
 			
 			util.logMessage("Выполнена операция изменения баланса.");

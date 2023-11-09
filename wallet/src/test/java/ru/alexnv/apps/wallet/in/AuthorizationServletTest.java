@@ -304,9 +304,11 @@ class AuthorizationServletTest {
 				}
 				""";
 		
+		PrintWriter mockWriter = mock(PrintWriter.class);
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
+        when(response.getWriter()).thenReturn(mockWriter);
 
         // Создаём экземпляр AuthorizationServlet
         AuthorizationServlet authorizationServlet = new AuthorizationServlet();
@@ -315,7 +317,9 @@ class AuthorizationServletTest {
         authorizationServlet.doPost(request, response);
 
         // Проверяем статус код
-        verify(response, times(1)).sendError(400);
+        verify(response, times(1)).setStatus(400);
+        verify(mockWriter, times(1)).flush();
+        
 	}
 	
 	@Test
@@ -327,9 +331,11 @@ class AuthorizationServletTest {
 				}
 				""";
 		
+		PrintWriter mockWriter = mock(PrintWriter.class);
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
+        when(response.getWriter()).thenReturn(mockWriter);
 
         // Создаём экземпляр AuthorizationServlet
         AuthorizationServlet authorizationServlet = new AuthorizationServlet();
@@ -338,7 +344,8 @@ class AuthorizationServletTest {
         authorizationServlet.doPost(request, response);
 
         // Проверяем статус код
-        verify(response, times(1)).sendError(400);
+        verify(response, times(1)).setStatus(400);
+        verify(mockWriter, times(1)).flush();
 	}
 
 }

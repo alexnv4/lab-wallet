@@ -78,6 +78,8 @@ public class RegisterServlet extends HttpServlet {
 			util.logMessage("Пользователь " + registeredLogin + " зарегистрирован.");
 		} catch (RegistrationException e) {
 			e.printStackTrace();
+			servletsUtil.respondWithError(response, responseCode, e.getMessage());
+			return;
 		} finally {
 			// Стирание пароля в DTO независимо от результата регистрации
 			char[] zeroPassword = new char[] { '0' };

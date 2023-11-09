@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import ru.alexnv.apps.wallet.in.JSONWebToken;
 import ru.alexnv.apps.wallet.in.Utility;
+import ru.alexnv.apps.wallet.in.servlets.ServletsUtility;
 
 /**
  * Фильтр авторизованных запросов.
@@ -94,7 +95,8 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
 			}
 		}
 
-		httpResponse.sendError(responseCode, "Invalid access token");
+		ServletsUtility util = new ServletsUtility();
+		util.respondWithError(httpResponse, responseCode, "Доступ запрещён. Проверьте токен и ID игрока.");
 	}
 	
 	/**

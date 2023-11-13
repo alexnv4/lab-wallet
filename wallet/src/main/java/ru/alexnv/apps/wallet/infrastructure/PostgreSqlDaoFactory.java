@@ -7,12 +7,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import ru.alexnv.apps.wallet.infrastructure.dao.AuditorDao;
-import ru.alexnv.apps.wallet.infrastructure.dao.AuditorDaoImpl;
-import ru.alexnv.apps.wallet.infrastructure.dao.PlayerDao;
-import ru.alexnv.apps.wallet.infrastructure.dao.PlayerDaoImpl;
-import ru.alexnv.apps.wallet.infrastructure.dao.TransactionDao;
-import ru.alexnv.apps.wallet.infrastructure.dao.TransactionDaoImpl;
+import ru.alexnv.apps.wallet.dao.AuditorDao;
+import ru.alexnv.apps.wallet.dao.AuditorDaoImpl;
+import ru.alexnv.apps.wallet.dao.PlayerDao;
+import ru.alexnv.apps.wallet.dao.PlayerDaoImpl;
+import ru.alexnv.apps.wallet.dao.TransactionDao;
+import ru.alexnv.apps.wallet.dao.TransactionDaoImpl;
 
 /**
  * Реализация фабрики DAO для PostgreSQL БД.

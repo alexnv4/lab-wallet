@@ -137,8 +137,13 @@ public class OperationsServlet extends HttpServlet {
 		
 		// responseCode для операции тоже SC_BAD_REQUEST 
 		// Выполнение операции для DTO
-		var playerService = (PlayerService) getServletContext().getAttribute("PlayerService");
 		var balanceChange = new BigDecimal(balanceChangeDto.getBalanceChange());
+		if (balanceChange.compareTo(BigDecimal.ZERO) == 0) {
+			servletsUtil.respondWithError(response, responseCode, "Изменение баланса не произведено. Введён ноль.");
+			return;
+		}
+		
+		var playerService = (PlayerService) getServletContext().getAttribute("PlayerService");
 		Long transactionId = balanceChangeDto.getTransactionId();
 		PlayerDto playerDto = null;
 		Long playerId = AuthorizedFilter.getPlayerIdFromURI(request);
@@ -148,9 +153,6 @@ public class OperationsServlet extends HttpServlet {
 				playerDto = playerService.credit(playerId, balanceChange, transactionId);
 			} else if ((balanceChange.compareTo(BigDecimal.ZERO) < 0)) {
 				playerDto = playerService.debit(playerId, balanceChange.negate(), transactionId);
-			} else { // balanceChange = 0
-				servletsUtil.respondWithError(response, responseCode, "Изменение баланса не произведено. Введён ноль.");
-				return;
 			}
 			
 			util.logMessage("Выполнена операция изменения баланса.");

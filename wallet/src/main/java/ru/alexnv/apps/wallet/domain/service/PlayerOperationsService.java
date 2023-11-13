@@ -7,20 +7,20 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import liquibase.exception.DatabaseException;
+import ru.alexnv.apps.wallet.dao.DaoException;
+import ru.alexnv.apps.wallet.dao.NotFoundException;
+import ru.alexnv.apps.wallet.dao.NotUniqueException;
+import ru.alexnv.apps.wallet.dao.PlayerDao;
+import ru.alexnv.apps.wallet.dao.TransactionDao;
 import ru.alexnv.apps.wallet.domain.dto.PlayerDto;
 import ru.alexnv.apps.wallet.domain.dto.TransactionDto;
 import ru.alexnv.apps.wallet.domain.mappers.PlayerMapper;
 import ru.alexnv.apps.wallet.domain.mappers.TransactionMapper;
 import ru.alexnv.apps.wallet.domain.model.Player;
 import ru.alexnv.apps.wallet.domain.model.Transaction;
+import ru.alexnv.apps.wallet.domain.service.exceptions.DatabaseException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.TransactionIdNotUniqueException;
-import ru.alexnv.apps.wallet.infrastructure.dao.DaoException;
-import ru.alexnv.apps.wallet.infrastructure.dao.NotFoundException;
-import ru.alexnv.apps.wallet.infrastructure.dao.NotUniqueException;
-import ru.alexnv.apps.wallet.infrastructure.dao.PlayerDao;
-import ru.alexnv.apps.wallet.infrastructure.dao.TransactionDao;
 import ru.alexnv.apps.wallet.service.exceptions.FindPlayerByIdException;
 
 /**

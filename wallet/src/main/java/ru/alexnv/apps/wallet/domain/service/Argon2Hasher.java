@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ru.alexnv.apps.wallet.infrastructure;
+package ru.alexnv.apps.wallet.domain.service;
 
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package ru.alexnv.apps.wallet.infrastructure;
+package ru.alexnv.apps.wallet.domain.service;
 
 /**
  * Интерфейс для хэширования паролей 

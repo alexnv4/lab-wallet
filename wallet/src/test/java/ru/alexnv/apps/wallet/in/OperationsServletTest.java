@@ -378,5 +378,33 @@ class OperationsServletTest {
         verify(response, times(1)).setStatus(400);
 		verify(mockWriter, times(1)).flush();
 	}
+	
+	@Test
+	final void should_return400_whenBalanceChangeZero() throws ServletException, IOException {
+		String inputJson = """
+				{
+				  "balanceChange": "0",
+				  "transactionId": "113"
+				}
+				""";
+		
+		PrintWriter mockWriter = mock(PrintWriter.class);
+        // Задаём нужные параметры для запроса
+        when(request.getContentType()).thenReturn("application/json");
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/wallet/players/1/balance"));
+        when(request.getPathInfo()).thenReturn("/1/balance");
+		when(response.getWriter()).thenReturn(mockWriter);
+
+        // Создаём экземпляр OperationsServlet
+        OperationsServlet operationsServlet = new OperationsServlet();
+
+        // Вызываем метод doPatch
+        operationsServlet.doPatch(request, response);
+
+        // Проверяем статус код
+        verify(response, times(1)).setStatus(400);
+		verify(mockWriter, times(1)).flush();
+	}
 
 }

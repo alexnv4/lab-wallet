@@ -1,4 +1,4 @@
-package ru.alexnv.apps.wallet.infrastructure.dao;
+package ru.alexnv.apps.wallet.dao;
 
 /**
  * Исключение при работе с БД.

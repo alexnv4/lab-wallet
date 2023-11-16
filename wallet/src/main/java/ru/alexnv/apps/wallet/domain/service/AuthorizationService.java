@@ -7,7 +7,6 @@ import ru.alexnv.apps.wallet.dao.NotFoundException;
 import ru.alexnv.apps.wallet.dao.PlayerDao;
 import ru.alexnv.apps.wallet.domain.model.Player;
 import ru.alexnv.apps.wallet.domain.service.exceptions.DatabaseException;
-import ru.alexnv.apps.wallet.domain.service.exceptions.LoginRepeatException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoSuchPlayerException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.WrongPasswordException;
 

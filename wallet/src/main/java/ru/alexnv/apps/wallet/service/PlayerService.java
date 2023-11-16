@@ -12,7 +12,6 @@ import ru.alexnv.apps.wallet.domain.service.AuthorizationService;
 import ru.alexnv.apps.wallet.domain.service.PlayerOperationsService;
 import ru.alexnv.apps.wallet.domain.service.RegistrationService;
 import ru.alexnv.apps.wallet.domain.service.exceptions.DatabaseException;
-import ru.alexnv.apps.wallet.domain.service.exceptions.LoginRepeatException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoSuchPlayerException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.PlayerAlreadyExistsException;
@@ -82,7 +81,7 @@ public class PlayerService {
 			playerDto = PlayerMapper.INSTANCE.toDto(authorizationService.authorize(login, password));
 
 			action = new Action(playerDto, "игрок " + login + " вошёл в кошелёк");
-		} catch (NoSuchPlayerException | WrongPasswordException | DatabaseException | LoginRepeatException e) {
+		} catch (NoSuchPlayerException | WrongPasswordException | DatabaseException e) {
 			action = new Action("попытка входа игрока " + login + " в кошелёк");
 
 			throw new AuthorizationException(e.getMessage());

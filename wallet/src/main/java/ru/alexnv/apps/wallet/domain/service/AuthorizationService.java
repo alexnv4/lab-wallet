@@ -41,10 +41,9 @@ public class AuthorizationService {
 	 * @throws NoSuchPlayerException  - такого игрока не существует
 	 * @throws WrongPasswordException - неправильный пароль для существующего игрока
 	 * @throws DatabaseException      - ошибка работы с БД
-	 * @throws LoginRepeatException   - повторный логин игрока
 	 */
 	public Player authorize(String login, char[] password)
-			throws NoSuchPlayerException, WrongPasswordException, DatabaseException, LoginRepeatException {
+			throws NoSuchPlayerException, WrongPasswordException, DatabaseException {
 		try {
 			Player player = playerDao.findByLogin(login);
 

@@ -68,7 +68,8 @@ public class OperationsServlet extends HttpServlet {
 	 * @throws IOException ошибка ввода-вывода
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	String path = request.getPathInfo();
     	
     	if (path != null && path.endsWith("/balance")) {

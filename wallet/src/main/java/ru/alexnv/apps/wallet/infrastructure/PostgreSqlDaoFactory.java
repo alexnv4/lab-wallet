@@ -80,6 +80,7 @@ public class PostgreSqlDaoFactory implements DaoFactory {
 	 * @return соединение
 	 * @throws SQLException ошибка БД
 	 */
+	@Override
 	public Connection getConnection() throws SQLException {
 		if (connection == null) {
 			connection = DriverManager.getConnection(this.url, this.user, this.password);

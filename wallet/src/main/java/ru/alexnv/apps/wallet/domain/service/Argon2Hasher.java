@@ -62,6 +62,7 @@ public class Argon2Hasher implements PasswordHasher {
 	 * @param password пароль plain text
 	 * @return true если хэш пароля верный
 	 */
+	@Override
 	public boolean verify(char[] hash, char[] password) {
 		try {
 			return argon2.verify(String.valueOf(hash), password);

@@ -55,6 +55,7 @@ public class RegisterServlet extends HttpServlet {
 	 * @throws IOException ошибка ввода-вывода
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		PlayerDto playerDto = null;
 		int responseCode = SC_BAD_REQUEST;

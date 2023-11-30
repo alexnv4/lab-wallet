@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
-
 /**
  * Модель предметной области - игрок
  */
@@ -98,6 +96,7 @@ public class Player {
 	}
 
 	/**
+	 * @param id 
 	 * @param login
 	 * @param password
 	 * @param balance
@@ -109,6 +108,7 @@ public class Player {
 	}
 
 	/**
+	 * @param id 
 	 * @param login
 	 * @param password
 	 * @param balance

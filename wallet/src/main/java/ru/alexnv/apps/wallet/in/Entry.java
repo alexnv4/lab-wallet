@@ -1,6 +1,7 @@
 package ru.alexnv.apps.wallet.in;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,20 +20,13 @@ public class Entry {
 	/**
 	 * Стартовое меню
 	 */
-	private final static Map<Integer, String> welcomeMenu = Map.of(
-			WelcomeMenuChoices.CHOICE_REGISTER.getChoice(), " - Регистрация",
-			WelcomeMenuChoices.CHOICE_LOGIN.getChoice(), " - Вход",
-			WelcomeMenuChoices.CHOICE_EXIT.getChoice(), " - Выход из кошелька");
+	private final static Map<Integer, String> welcomeMenu = new LinkedHashMap<>();
+			
 	
 	/**
 	 * Меню залогиненного игрока
 	 */
-	private final static Map<Integer, String> loggedMenu = Map.of(
-			LoggedMenuChoices.CHOICE_BALANCE.getChoice(), " - Мой текущий баланс",
-			LoggedMenuChoices.CHOICE_DEBIT.getChoice(), " - Снятие средств (дебет)",
-			LoggedMenuChoices.CHOICE_CREDIT.getChoice(), " - Пополнение средств (кредит)",
-			LoggedMenuChoices.CHOICE_HISTORY.getChoice(), " - История пополнений и снятий",
-			LoggedMenuChoices.CHOICE_LOGOUT.getChoice(), " - Выход из аккаунта");
+	private final static Map<Integer, String> loggedMenu = new LinkedHashMap<>();
 
 	/**
 	 * Служба приложения, устанавливаемая внешним слоем
@@ -50,6 +44,17 @@ public class Entry {
 	public Entry(PlayerService playerService) {
 		this.playerService = playerService;
 
+		// Заполнение пунктов меню
+		welcomeMenu.put(WelcomeMenuChoices.CHOICE_REGISTER.getChoice(), " - Регистрация");
+		welcomeMenu.put(WelcomeMenuChoices.CHOICE_LOGIN.getChoice(), " - Вход");
+		welcomeMenu.put(WelcomeMenuChoices.CHOICE_EXIT.getChoice(), " - Выход из кошелька");
+		
+		loggedMenu.put(LoggedMenuChoices.CHOICE_BALANCE.getChoice(), " - Мой текущий баланс");
+		loggedMenu.put(LoggedMenuChoices.CHOICE_DEBIT.getChoice(), " - Снятие средств (дебет)");
+		loggedMenu.put(LoggedMenuChoices.CHOICE_CREDIT.getChoice(), " - Пополнение средств (кредит)");
+		loggedMenu.put(LoggedMenuChoices.CHOICE_HISTORY.getChoice(), " - История пополнений и снятий");
+		loggedMenu.put(LoggedMenuChoices.CHOICE_LOGOUT.getChoice(), " - Выход из аккаунта");
+		
 		// Запуск основного меню
 		menuLoop();
 	}
@@ -67,8 +72,9 @@ public class Entry {
 			case WELCOME:
 				WelcomeMenuChoices welcomeMenuChoice;
 				try {
-					welcomeMenuChoice = welcomeMenuInput();
+					welcomeMenuChoice = menuInput(welcomeMenu, WelcomeMenuChoices.class);
 				} catch (IncorrectMenuChoiceException e) {
+					util.printLine(e.getMessage());
 					welcomeMenuChoice = WelcomeMenuChoices.CHOICE_NOT_EXIST;
 				}
 				switch (welcomeMenuChoice) {
@@ -80,6 +86,9 @@ public class Entry {
 					break;
 				case CHOICE_EXIT:
 					screenState = States.EXIT;
+					break;
+				case CHOICE_NOT_EXIST:
+					screenState = States.WELCOME;
 					break;
 				default:
 					screenState = States.WELCOME;
@@ -115,8 +124,9 @@ public class Entry {
 			case LOGGED_IN:
 				LoggedMenuChoices loggedMenuChoices;
 				try {
-					loggedMenuChoices = loggedMenuInput();
+					loggedMenuChoices = menuInput(loggedMenu, LoggedMenuChoices.class);
 				} catch (IncorrectMenuChoiceException e) {
+					util.printLine(e.getMessage());
 					loggedMenuChoices = LoggedMenuChoices.CHOICE_NOT_EXIST;
 				}
 
@@ -143,6 +153,9 @@ public class Entry {
 					playerService.logout();
 
 					screenState = States.WELCOME;
+					break;
+				case CHOICE_NOT_EXIST:
+					screenState = States.LOGGED_IN;
 					break;
 				default:
 					util.printLine("Ошибка ввода. Повторите");
@@ -184,44 +197,36 @@ public class Entry {
 			}
 		} while (screenState != States.EXIT);
 	}
-
-	/**
-	 * Печать меню и выбор пункта стартового меню
-	 * 
-	 * @return выбранный пункт меню
-	 * @throws IncorrectMenuChoiceException если такого пункта меню нет
-	 */
-	private WelcomeMenuChoices welcomeMenuInput() throws IncorrectMenuChoiceException {
-		String[] welcomeText = util.convertMapToStringArray(welcomeMenu);
+	
+	private int menuPrompt(String[] menuText) throws IncorrectMenuChoiceException {
 		int choice = 0; // введённое число, может не сооветствовать пункту меню
+		
 		try {
-			choice = util.getUserChoice(welcomeText);
+			choice = util.getUserChoice(menuText);
 		} catch (NotNumberException e) {
 			throw new IncorrectMenuChoiceException("Ошибка ввода числа.");
 		}
+		
+		return choice;
+	}
+	
+	/**
+	 * Печать меню и выбор пункта меню
+	 * 
+	 * @param menuMap   меню в виде Map
+	 * @param enumClass класс enum, реализующий интерфейс MenuEnum
+	 * @param <T>       значение меню в виде enum, реализующее интерфейс MenuEnum
+	 * @return выбранный пункт меню
+	 * @throws IncorrectMenuChoiceException если такого пункта меню нет
+	 */
+	private <T extends Enum<T> & MenuEnum> T menuInput(Map<Integer, String> menuMap, Class<T> enumClass)
+			throws IncorrectMenuChoiceException {
+		String[] menuText = util.convertMapToStringArray(menuMap);
+		int choice = menuPrompt(menuText);
 
 		// сопоставление введённого числа и пункта меню
-		WelcomeMenuChoices welcomeMenuChoice = util.getWelcomeEnumByNumber(choice);
-		return welcomeMenuChoice;
-	}
-
-	/**
-	 * Печать меню и выбор пункта меню залогиненного игрока
-	 * 
-	 * @return выбранный пункт меню
-	 * @throws IncorrectMenuChoiceException если такого пункта меню нет
-	 */
-	private LoggedMenuChoices loggedMenuInput() throws IncorrectMenuChoiceException {
-		String[] loggedText = util.convertMapToStringArray(loggedMenu);
-		int choice = 0;
-		try {
-			choice = util.getUserChoice(loggedText);
-		} catch (NotNumberException e) {
-			throw new IncorrectMenuChoiceException("Ошибка ввода числа.");
-		}
-
-		LoggedMenuChoices loggedMenuChoice = util.getLoggedEnumByNumber(choice);
-		return loggedMenuChoice;
+		T menuChoice = util.getEnumByNumber(enumClass, choice);
+		return menuChoice;
 	}
 
 	/**
@@ -235,6 +240,7 @@ public class Entry {
 		BigDecimal balance = null;
 		try {
 			balance = new BigDecimal(input);
+			
 			// если введённый баланс отрицательный или ноль
 			if (balance.compareTo(new BigDecimal("0.00")) <= 0) {
 				throw new IncorrectBalanceInputException("Неправильный ввод средств.");

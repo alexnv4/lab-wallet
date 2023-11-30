@@ -109,11 +109,17 @@ public class Utility {
 	 * @param map
 	 * @return текст
 	 */
-	protected String[] convertMapToStringArray(Map<Integer, ?> map) {
+	protected String[] convertMapToStringArray(Map<Integer, String> map) {
 		String[] text = new String[map.size()];
-		for (Integer key : map.keySet()) {
-			text[key - 1] = key.toString() + map.get(key);
+		int i = 0;
+		
+		for (Map.Entry<Integer, String> entry : map.entrySet()) {
+			Integer key = entry.getKey();
+			String value = entry.getValue();
+			text[i] = key.toString() + value;
+			i++;
 		}
+		
 		return text;
 	}
 
@@ -128,42 +134,28 @@ public class Utility {
 		String[] credectianls = { login, password };
 		return credectianls;
 	}
-
+	
 	/**
 	 * Получение значения enum из введённой цифры
 	 * 
-	 * @param choice
-	 * @return выбор стартового меню
-	 * @throws IncorrectMenuChoiceException если такого пункта нет в меню
-	 */
-	protected WelcomeMenuChoices getWelcomeEnumByNumber(int choice) throws IncorrectMenuChoiceException {
-		WelcomeMenuChoices result = null;
-		for (WelcomeMenuChoices welcomeMenuChoice : WelcomeMenuChoices.values()) {
-			if (welcomeMenuChoice.getChoice() == choice) {
-				result = welcomeMenuChoice;
-				break;
-			}
-		}
-
-		if (result == null) {
-			throw new IncorrectMenuChoiceException("Такого пункта в меню нет.");
-		}
-
-		return result;
-	}
-
-	/**
-	 * Получение значения enum из введённой цифры
-	 * 
-	 * @param choice
+	 * @param <T>       значение enum, реализующее интерфейс MenuEnum
+	 * @param enumClass класс, реализующий интерфейс MenuEnum
+	 * @param choice    выбранное значение enum в виде числа
 	 * @return выбор залогиненного меню
 	 * @throws IncorrectMenuChoiceException если такого пункта нет в меню
 	 */
-	protected LoggedMenuChoices getLoggedEnumByNumber(int choice) throws IncorrectMenuChoiceException {
-		LoggedMenuChoices result = null;
-		for (LoggedMenuChoices loggedMenuChoice : LoggedMenuChoices.values()) {
-			if (loggedMenuChoice.getChoice() == choice) {
-				result = loggedMenuChoice;
+	protected <T extends Enum<T> & MenuEnum> T getEnumByNumber(Class<T> enumClass, int choice)
+			throws IncorrectMenuChoiceException {
+		if (choice == MenuEnum.NOT_EXIST) {
+			throw new IncorrectMenuChoiceException("Такого пункта в меню нет.");
+		}
+
+		T[] enumValues = enumClass.getEnumConstants();
+		T result = null;
+
+		for (T enumValue : enumValues) {
+			if (enumValue.getChoice() == choice) {
+				result = enumValue;
 				break;
 			}
 		}
@@ -171,6 +163,7 @@ public class Utility {
 		if (result == null) {
 			throw new IncorrectMenuChoiceException("Такого пункта в меню нет.");
 		}
+
 		return result;
 	}
 

@@ -3,11 +3,11 @@ package ru.alexnv.apps.wallet.in;
 /**
  * Варианты в стартовом меню 
  */
-public enum WelcomeMenuChoices {
+public enum WelcomeMenuChoices implements MenuEnum {
 	CHOICE_REGISTER(1),
 	CHOICE_LOGIN(2),
 	CHOICE_EXIT(3),
-	CHOICE_NOT_EXIST(-1);
+	CHOICE_NOT_EXIST(NOT_EXIST);
 
 	/**
 	 * Выбранный пункт меню
@@ -21,6 +21,7 @@ public enum WelcomeMenuChoices {
 	/**
 	 * @return выбор
 	 */
+	@Override
 	public int getChoice() {
 		return choice;
 	}

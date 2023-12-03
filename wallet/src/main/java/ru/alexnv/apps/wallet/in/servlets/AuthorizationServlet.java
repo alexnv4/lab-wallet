@@ -9,7 +9,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -83,7 +82,7 @@ public class AuthorizationServlet extends HttpServlet {
 			util.logMessage(("Пользователь " + registeredLogin + " зашёл в кошелёк."));
 			
 			// Создание JWT для последующих запросов
-			JSONWebToken jwt = createJWT(playerDto.getId());
+			JSONWebToken jwt = JSONWebToken.createJWT(playerDto.getId());
 			String token = jwt.generate();
 			response.setHeader("Authorization", token);
 			util.logMessage("Токен сгенерирован для игрока " + registeredLogin);
@@ -109,18 +108,6 @@ public class AuthorizationServlet extends HttpServlet {
 		
 		// Отправка итогового DTO клиенту в JSON
 		servletsUtil.respondWithJson(response, responseCode, playerDto);
-	}
-
-	/**
-	 * Создание JWT объекта
-	 * @param playerId 
-	 * 
-	 * @return JSONWebToken объект
-	 * @throws JsonMappingException
-	 * @throws JsonProcessingException
-	 */
-	public JSONWebToken createJWT(Long playerId) throws JsonMappingException, JsonProcessingException {
-		return new JSONWebToken(playerId);
 	}
 
 }

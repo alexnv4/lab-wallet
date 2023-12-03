@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -73,7 +70,7 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
 		String authorizationHeader = httpRequest.getHeader(AUTHORIZATION_NAME);
 		if (authorizationHeader != null && authorizationHeader.startsWith(BEARER_NAME)) {
 			String token = authorizationHeader.substring(BEARER_NAME.length());
-			JSONWebToken jwt = createJWT();
+			JSONWebToken jwt = JSONWebToken.createJWT();
 			try {
 				if (jwt.isValidToken(token)) { // подпись токена валидна
 					Long playerIdURI = getPlayerIdFromURI(httpRequest);
@@ -98,17 +95,6 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
 
 		ServletsUtility util = new ServletsUtility();
 		util.respondWithError(httpResponse, responseCode, "Доступ запрещён. Проверьте токен и ID игрока.");
-	}
-	
-	/**
-	 * Создание объекта JWT
-	 * 
-	 * @return JWT
-	 * @throws JsonMappingException
-	 * @throws JsonProcessingException
-	 */
-	public JSONWebToken createJWT() throws JsonMappingException, JsonProcessingException {
-		return new JSONWebToken();
 	}
 
 	/**

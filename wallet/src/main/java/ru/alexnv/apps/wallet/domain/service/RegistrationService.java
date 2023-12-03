@@ -60,12 +60,8 @@ public class RegistrationService {
 	 * @return существует или нет
 	 */
 	private boolean loginExists(List<Player> players, String login) {
-		for (Player player : players) {
-			if (login.equals(player.getLogin())) {
-				return true;
-			}
-		}
-		return false;
+		return players.stream()
+				.anyMatch(player -> login.equals(player.getLogin()));
 	}
 
 }

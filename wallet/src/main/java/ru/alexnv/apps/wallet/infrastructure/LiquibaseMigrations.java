@@ -26,11 +26,6 @@ import ru.alexnv.apps.wallet.in.Utility;
 public class LiquibaseMigrations {
 
 	/**
-	 * Имя файла свойств БД и liquibase
-	 */
-	private static final String liquibaseFileName = "liquibase.properties";
-
-	/**
 	 * Свойства миграций, считываются из файла
 	 */
 	private Properties props;
@@ -60,7 +55,7 @@ public class LiquibaseMigrations {
 	 */
 	public LiquibaseMigrations() {
 		props = new Properties();
-		try (InputStream is = getClass().getClassLoader().getResourceAsStream(liquibaseFileName)) {
+		try (InputStream is = getClass().getClassLoader().getResourceAsStream(PostgreSqlDaoFactory.DB_PROPERTIES_FILE)) {
 			props.load(is);
 			changeLogFile = props.getProperty("changeLogFile");
 			defaultSchemaName = props.getProperty("defaultSchemaName");

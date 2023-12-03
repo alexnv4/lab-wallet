@@ -19,7 +19,7 @@ public class PostgreSqlDaoFactory implements DaoFactory {
 	/**
 	 * Имя файла, в котором хранятся настройки БД
 	 */
-	private static final String liquibaseFileName = "liquibase.properties";
+	protected static final String DB_PROPERTIES_FILE = "liquibase.properties";
 
 	/**
 	 * Имя пользователя БД
@@ -41,8 +41,6 @@ public class PostgreSqlDaoFactory implements DaoFactory {
 	 */
 	private Properties props;
 
-	// private String driver;
-
 	/**
 	 * Соединение с БД
 	 */
@@ -51,9 +49,8 @@ public class PostgreSqlDaoFactory implements DaoFactory {
 	public PostgreSqlDaoFactory(boolean readProperties) {
 		if (readProperties) {
 			props = new Properties();
-			try (InputStream is = getClass().getClassLoader().getResourceAsStream(liquibaseFileName)) {
+			try (InputStream is = getClass().getClassLoader().getResourceAsStream(DB_PROPERTIES_FILE)) {
 				props.load(is);
-				// driver = props.getProperty("driver");
 				url = props.getProperty("url");
 				user = props.getProperty("username");
 				password = props.getProperty("password");
@@ -61,12 +58,6 @@ public class PostgreSqlDaoFactory implements DaoFactory {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			// try {
-			// Class.forName(driver);
-			// } catch (ClassNotFoundException e) {
-			// e.printStackTrace();
-			// }
 		}
 	}
 

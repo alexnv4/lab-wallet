@@ -5,18 +5,29 @@ package ru.alexnv.apps.wallet.in;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.MockedStatic;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import ru.alexnv.apps.wallet.in.filters.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import ru.alexnv.apps.wallet.in.filters.AuthorizedFilter;
 
 /**
  * 
@@ -276,19 +287,21 @@ class AuthorizedFilterTest {
 		AuthorizedFilter authorizedFilter = spy(AuthorizedFilter.class);
 		
 		doThrow(InvalidKeyException.class).when(jwt).isValidToken(any());
-		when(authorizedFilter.createJWT()).thenReturn(jwt);
+		try (MockedStatic<JSONWebToken> mockedJWT = mockStatic(JSONWebToken.class)) {
+			mockedJWT.when(() -> JSONWebToken.createJWT()).thenReturn(jwt);
 
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-		
-		Executable executable = () -> jwt.isValidToken(any());
-		
-		// Проверяем, что бросилось исключение
-		assertThrows(InvalidKeyException.class, executable);
+			// Вызываем метод doFilter
+			authorizedFilter.doFilter(request, response, chain);
 
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(401);
-		verify(mockWriter, times(1)).flush();
+			Executable executable = () -> jwt.isValidToken(any());
+
+			// Проверяем, что бросилось исключение
+			assertThrows(InvalidKeyException.class, executable);
+
+			// Проверяем выполнение фильтра
+			verify(response, times(1)).setStatus(401);
+			verify(mockWriter, times(1)).flush();
+		}
 	}
 	
 	@Test
@@ -307,19 +320,21 @@ class AuthorizedFilterTest {
 		AuthorizedFilter authorizedFilter = spy(AuthorizedFilter.class);
 		
 		doThrow(NoSuchAlgorithmException.class).when(jwt).isValidToken(any());
-		when(authorizedFilter.createJWT()).thenReturn(jwt);
+		try (MockedStatic<JSONWebToken> mockedJWT = mockStatic(JSONWebToken.class)) {
+			mockedJWT.when(() -> JSONWebToken.createJWT()).thenReturn(jwt);
 
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-		
-		Executable executable = () -> jwt.isValidToken(any());
-		
-		// Проверяем, что бросилось исключение
-		assertThrows(NoSuchAlgorithmException.class, executable);
+			// Вызываем метод doFilter
+			authorizedFilter.doFilter(request, response, chain);
 
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(401);
-		verify(mockWriter, times(1)).flush();
+			Executable executable = () -> jwt.isValidToken(any());
+
+			// Проверяем, что бросилось исключение
+			assertThrows(NoSuchAlgorithmException.class, executable);
+
+			// Проверяем выполнение фильтра
+			verify(response, times(1)).setStatus(401);
+			verify(mockWriter, times(1)).flush();
+		}
 	}
 
 }

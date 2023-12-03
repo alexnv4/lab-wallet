@@ -11,6 +11,7 @@ import java.security.*;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.MockedStatic;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
@@ -178,19 +179,21 @@ class AuthorizationServletTest {
         when(playerDto.getLogin()).thenReturn("mylogin6");
 		when(playerService.authorize("mylogin6", "mypassword999".toCharArray())).thenReturn(playerDto);
 		doThrow(InvalidKeyException.class).when(jwt).generate();
-		when(authorizationServlet.createJWT(any())).thenReturn(jwt);
+		try (MockedStatic<JSONWebToken> mockedJWT = mockStatic(JSONWebToken.class)) {
+			mockedJWT.when(() -> JSONWebToken.createJWT(anyLong())).thenReturn(jwt);
 
-        // Вызываем метод doPost
-        authorizationServlet.doPost(request, response);
+			// Вызываем метод doPost
+			authorizationServlet.doPost(request, response);
 
-		// Когда выполнится регистрация 
-		Executable executable = () -> jwt.generate();
-		
-		// Проверяем, что бросилось исключение
-		assertThrows(InvalidKeyException.class, executable);
+			// Когда выполнится регистрация
+			Executable executable = jwt::generate;
 
-		// Проверяем статус код
-		verify(response).setStatus(401);
+			// Проверяем, что бросилось исключение
+			assertThrows(InvalidKeyException.class, executable);
+
+			// Проверяем статус код
+			verify(response).setStatus(401);
+		}
 	}
 	
 	@Test
@@ -228,20 +231,23 @@ class AuthorizationServletTest {
         // Mock playerService.authorize
         when(playerDto.getLogin()).thenReturn("mylogin6");
 		when(playerService.authorize("mylogin6", "mypassword999".toCharArray())).thenReturn(playerDto);
-		doThrow(NoSuchAlgorithmException.class).when(jwt).generate();
-		when(authorizationServlet.createJWT(any())).thenReturn(jwt);
-
-        // Вызываем метод doPost
-        authorizationServlet.doPost(request, response);
-
-		// Когда выполнится регистрация 
-		Executable executable = () -> jwt.generate();
 		
-		// Проверяем, что бросилось исключение
-		assertThrows(NoSuchAlgorithmException.class, executable);
+		doThrow(NoSuchAlgorithmException.class).when(jwt).generate();
+		try (MockedStatic<JSONWebToken> mockedJWT = mockStatic(JSONWebToken.class)) {
+			mockedJWT.when( () -> JSONWebToken.createJWT(anyLong())).thenReturn(jwt);
 
-		// Проверяем статус код
-		verify(response).setStatus(401);
+			// Вызываем метод doPost
+			authorizationServlet.doPost(request, response);
+
+			// Когда выполнится регистрация
+			Executable executable = jwt::generate;
+
+			// Проверяем, что бросилось исключение
+			assertThrows(NoSuchAlgorithmException.class, executable);
+
+			// Проверяем статус код
+			verify(response).setStatus(401);
+		}
 	}
 	
 	@Test
@@ -280,19 +286,21 @@ class AuthorizationServletTest {
         when(playerDto.getLogin()).thenReturn("mylogin6");
 		when(playerService.authorize("mylogin6", "mypassword999".toCharArray())).thenReturn(playerDto);
 		doThrow(JsonProcessingException.class).when(jwt).generate();
-		when(authorizationServlet.createJWT(any())).thenReturn(jwt);
+		try (MockedStatic<JSONWebToken> mockedJWT = mockStatic(JSONWebToken.class)) {
+			mockedJWT.when(() -> JSONWebToken.createJWT(anyLong())).thenReturn(jwt);
 
-        // Вызываем метод doPost
-        authorizationServlet.doPost(request, response);
+			// Вызываем метод doPost
+			authorizationServlet.doPost(request, response);
 
-		// Когда выполнится регистрация
-		Executable executable = () -> jwt.generate();
-		
-		// Проверяем, что бросилось исключение
-		assertThrows(JsonProcessingException.class, executable);
+			// Когда выполнится регистрация
+			Executable executable = jwt::generate;
 
-		// Проверяем статус код
-		verify(response).setStatus(401);
+			// Проверяем, что бросилось исключение
+			assertThrows(JsonProcessingException.class, executable);
+
+			// Проверяем статус код
+			verify(response).setStatus(401);
+		}
 	}
 	
 	@Test

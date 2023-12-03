@@ -200,4 +200,28 @@ public class JSONWebToken {
 		JsonNode jsonNode = objectMapper.readTree(payloadJson);
 		this.sub = jsonNode.get("sub").longValue();
 	}
+	
+	/**
+	 * Создание объекта JWT
+	 * 
+	 * @return JWT
+	 * @throws JsonMappingException
+	 * @throws JsonProcessingException
+	 */
+	public static JSONWebToken createJWT() throws JsonMappingException, JsonProcessingException {
+		return new JSONWebToken();
+	}
+	
+	/**
+	 * Создание JWT объекта
+	 * @param playerId 
+	 * 
+	 * @return JSONWebToken объект
+	 * @throws JsonMappingException
+	 * @throws JsonProcessingException
+	 */
+	public static JSONWebToken createJWT(Long playerId) throws JsonMappingException, JsonProcessingException {
+		return new JSONWebToken(playerId);
+	}
+	
 }

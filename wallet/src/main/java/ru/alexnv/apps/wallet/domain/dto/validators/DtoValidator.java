@@ -5,7 +5,6 @@ package ru.alexnv.apps.wallet.domain.dto.validators;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.validation.constraints.Digits;
@@ -20,16 +19,6 @@ import ru.alexnv.apps.wallet.domain.dto.AbstractDto;
  * 
  */
 public class DtoValidator extends AbstractDtoValidator {
-
-	/** Список нарушений валидации. */
-	private List<String> violations;
-
-	/**
-	 * Создание DTO валидатора.
-	 */
-	public DtoValidator() {
-		violations = new ArrayList<>();
-	}
 
 	@Override
 	public List<String> validate(AbstractDto dto) throws IllegalArgumentException, IllegalAccessException {
@@ -50,41 +39,38 @@ public class DtoValidator extends AbstractDtoValidator {
 			Object fieldValue = field.get(dto);
 
 			// Проверяем наличие аннотации NotNull
-			if (field.isAnnotationPresent(NotNull.class)) {
-				if (fieldValue == null) {
-					NotNull notNullAnno = field.getAnnotation(NotNull.class);
-					violations.add(notNullAnno.message());
-				}
+			if (field.isAnnotationPresent(NotNull.class) && (fieldValue == null)) {
+				NotNull notNullAnno = field.getAnnotation(NotNull.class);
+				violations.add(notNullAnno.message());
+
 			}
 
 			// Проверяем наличие аннотации Null
-			if (field.isAnnotationPresent(Null.class)) {
-				if (fieldValue != null) {
-					Null nullAnno = field.getAnnotation(Null.class);
-					violations.add(nullAnno.message());
-				}
+			if (field.isAnnotationPresent(Null.class) && (fieldValue != null)) {
+				Null nullAnno = field.getAnnotation(Null.class);
+				violations.add(nullAnno.message());
+
 			}
 
 			// Проверяем наличие аннотации Size
-			if (field.isAnnotationPresent(Size.class)) {
-				if (fieldValue != null) {
-					Size sizeAnno = field.getAnnotation(Size.class);
-					int min = sizeAnno.min();
-					int max = sizeAnno.max();
+			if (field.isAnnotationPresent(Size.class) && (fieldValue != null)) {
+				Size sizeAnno = field.getAnnotation(Size.class);
+				int min = sizeAnno.min();
+				int max = sizeAnno.max();
 
-					int fieldSize = 0;
-					if (!(fieldValue instanceof String)) {
-						char[] fieldChars = (char[]) fieldValue;
-						fieldSize = fieldChars.length;
-					} else {
-						String fieldString = (String) fieldValue;
-						fieldSize = fieldString.length();
-					}
-
-					if (fieldSize < min || fieldSize > max) {
-						violations.add(sizeAnno.message());
-					}
+				int fieldSize = 0;
+				if (!(fieldValue instanceof String fieldString)) {
+					char[] fieldChars = (char[]) fieldValue;
+					fieldSize = fieldChars.length;
+				} else {
+					//String fieldString = (String) fieldValue;
+					fieldSize = fieldString.length();
 				}
+
+				if (fieldSize < min || fieldSize > max) {
+					violations.add(sizeAnno.message());
+				}
+
 			}
 
 			// Проверяем наличие аннотации NotBlank
@@ -97,38 +83,36 @@ public class DtoValidator extends AbstractDtoValidator {
 			}
 
 			// Проверяем наличие аннотации Positive
-			if (field.isAnnotationPresent(Positive.class)) {
-				if (fieldValue != null) {
-					Long fieldNumber = (Long) fieldValue;
-					if (fieldNumber <= 0) {
-						Positive positiveAnno = field.getAnnotation(Positive.class);
-						violations.add(positiveAnno.message());
-					}
+			if (field.isAnnotationPresent(Positive.class) && (fieldValue != null)) {
+				Long fieldNumber = (Long) fieldValue;
+				if (fieldNumber <= 0) {
+					Positive positiveAnno = field.getAnnotation(Positive.class);
+					violations.add(positiveAnno.message());
 				}
+
 			}
 
 			// Проверяем наличие аннотации Digits
-			if (field.isAnnotationPresent(Digits.class)) {
-				if (fieldValue != null) {
-					Digits digitsAnno = field.getAnnotation(Digits.class);
-					int integer = digitsAnno.integer();
-					int fraction = digitsAnno.fraction();
+			if (field.isAnnotationPresent(Digits.class) && (fieldValue != null)) {
+				Digits digitsAnno = field.getAnnotation(Digits.class);
+				int integer = digitsAnno.integer();
+				int fraction = digitsAnno.fraction();
 
-					String fieldString = (String) fieldValue;
-					if (!fieldString.isBlank()) {
-						// Digits применимо к BigDecimal
-						try {
-							BigDecimal fieldDecimal = new BigDecimal(fieldString);
-							int fractionInput = fieldDecimal.scale();
-							int integerInput = fieldDecimal.precision() - fractionInput;
-							if (fractionInput > fraction || integerInput > integer) {
-								violations.add(digitsAnno.message());
-							}
-						} catch (NumberFormatException e) {
+				String fieldString = (String) fieldValue;
+				if (!fieldString.isBlank()) {
+					// Digits применимо к BigDecimal
+					try {
+						BigDecimal fieldDecimal = new BigDecimal(fieldString);
+						int fractionInput = fieldDecimal.scale();
+						int integerInput = fieldDecimal.precision() - fractionInput;
+						if (fractionInput > fraction || integerInput > integer) {
 							violations.add(digitsAnno.message());
 						}
+					} catch (NumberFormatException e) {
+						violations.add(digitsAnno.message());
 					}
 				}
+
 			}
 		}
 

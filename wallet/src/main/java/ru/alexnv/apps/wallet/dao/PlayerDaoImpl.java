@@ -23,6 +23,10 @@ import ru.alexnv.apps.wallet.domain.model.Player;
  */
 public class PlayerDaoImpl implements PlayerDao {
 	
+	private static final String PLAYER_ID_COLUMN = "player_id";
+
+	private static final String BALANCE_COLUMN = "balance";
+
 	/** Длина хэшированного пароля в БД. */
 	private static final int PASSWORD_LENGTH = 128;
 
@@ -90,10 +94,7 @@ public class PlayerDaoImpl implements PlayerDao {
 			statement.setBigDecimal(1, player.getBalanceNumeric());
 			statement.setLong(2, player.getId());
 			int rowsAffected = statement.executeUpdate();
-			if (rowsAffected > 0) {
-				return true;
-			}
-			return false;
+			return (rowsAffected > 0);
 
 		} catch (SQLException e) {
 			throw new DaoException("Ошибка обновления баланса игрока id: " + player.getId(), e);
@@ -102,8 +103,7 @@ public class PlayerDaoImpl implements PlayerDao {
 
 	@Override
 	public boolean delete(Player player) throws DaoException {
-		// TODO Auto-generated method stub
-		return false;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -125,14 +125,12 @@ public class PlayerDaoImpl implements PlayerDao {
 					throw new NotFoundException("Не найдено.");
 				}
 
-				long id = resultSet.getLong("player_id");
+				long id = resultSet.getLong(PLAYER_ID_COLUMN);
 				String login = resultSet.getString("login");
 				
-				BigDecimal balance = resultSet.getBigDecimal("balance");
+				BigDecimal balance = resultSet.getBigDecimal(BALANCE_COLUMN);
 
-				Player player = new Player(id, login, new char[] { '0' }, balance);
-				
-				return player;
+				return new Player(id, login, new char[] { '0' }, balance);
 			}
 		} catch (SQLException e) {
 			throw new DaoException("Ошибка поиска игрока: ", e);
@@ -153,10 +151,10 @@ public class PlayerDaoImpl implements PlayerDao {
 		try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(sql)) {
 
 			while (resultSet.next()) {
-				long id = resultSet.getLong("player_id");
+				long id = resultSet.getLong(PLAYER_ID_COLUMN);
 				String login = resultSet.getString("login");
 
-				BigDecimal balance = resultSet.getBigDecimal("balance");
+				BigDecimal balance = resultSet.getBigDecimal(BALANCE_COLUMN);
 
 				Player player = new Player(id, login, new char[] { '0' }, balance);
 				
@@ -188,16 +186,14 @@ public class PlayerDaoImpl implements PlayerDao {
 					throw new NotFoundException("Не найдено.");
 				}
 
-				Long id = resultSet.getLong("player_id");
+				Long id = resultSet.getLong(PLAYER_ID_COLUMN);
 				
 				Reader reader = resultSet.getCharacterStream("password");
 				char[] passwordHash = readPassword(reader);
 				
-				BigDecimal balance = resultSet.getBigDecimal("balance");
+				BigDecimal balance = resultSet.getBigDecimal(BALANCE_COLUMN);
 
-				Player player = new Player(id, login, passwordHash, balance);
-				
-				return player;
+				return new Player(id, login, passwordHash, balance);
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new DaoException("Ошибка чтения хэша пароля. ", e);

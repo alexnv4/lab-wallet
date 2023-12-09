@@ -30,7 +30,7 @@ public class JSONWebToken {
 	private static final String SECRET_KEY = "Y18nRG#CHD8kp4Bs_5AS@KZphNCdpVdM";
 	
 	/** HMAC_SHA256_алгоритм. */
-	private static final String HMAC_SHA256_Algorithm = "HmacSHA256";
+	private static final String HMAC_SHA256_ALGORITHM = "HmacSHA256";
 	
 	/** Закодированный заголовок JWT. */
 	private final String encodedHeader;
@@ -50,10 +50,9 @@ public class JSONWebToken {
 	/**
 	 * Создание JSON Web Token.
 	 *
-	 * @throws JsonMappingException ошибка обработки JSON
 	 * @throws JsonProcessingException ошибка обработки JSON
 	 */
-	public JSONWebToken() throws JsonMappingException, JsonProcessingException {
+	public JSONWebToken() throws JsonProcessingException {
 		// кодирование header
 		var mapper = new ObjectMapper();
 		JsonNode headerNodes = mapper.readTree(JWT_HEADER);
@@ -63,10 +62,9 @@ public class JSONWebToken {
 	/**
 	 * @param sub Subject of the JWT (playerId)
 	 * @throws JsonProcessingException 
-	 * @throws JsonMappingException 
 	 * 
 	 */
-	public JSONWebToken(Long sub) throws JsonMappingException, JsonProcessingException {
+	public JSONWebToken(Long sub) throws JsonProcessingException {
 		this();
 		this.sub = sub;
 	}
@@ -130,7 +128,7 @@ public class JSONWebToken {
 		
 		// создание подписи
 		unsignedToken =  encodedHeader + "." + encodedPayload;
-		signature = hmacWithJava(HMAC_SHA256_Algorithm, unsignedToken, SECRET_KEY);
+		signature = hmacWithJava(HMAC_SHA256_ALGORITHM, unsignedToken, SECRET_KEY);
 		token = unsignedToken + "." + signature;
 		return token;
 	}
@@ -163,7 +161,7 @@ public class JSONWebToken {
 		String payloadEncoded = parts[1];
 		unsignedToken = headerEncoded + "." + payloadEncoded;
 		signature = parts[2];
-		String calculatedSignature = hmacWithJava(HMAC_SHA256_Algorithm, unsignedToken, SECRET_KEY);
+		String calculatedSignature = hmacWithJava(HMAC_SHA256_ALGORITHM, unsignedToken, SECRET_KEY);
 		return calculatedSignature.equals(signature);
 	}
 
@@ -173,9 +171,8 @@ public class JSONWebToken {
 	 * @param token токен 
 	 * @return значение subject
 	 * @throws JsonProcessingException 
-	 * @throws JsonMappingException 
 	 */
-	public Long readSubValue(String token) throws JsonMappingException, JsonProcessingException {
+	public Long readSubValue(String token) throws JsonProcessingException {
 		if (sub == null) {
 			decodePayload(token);
 		}
@@ -186,10 +183,9 @@ public class JSONWebToken {
 	 * Декодирование payload из токена и установка полей класса из JWT Claims
 	 * 
 	 * @param token токен
-	 * @throws JsonMappingException
 	 * @throws JsonProcessingException
 	 */
-	public void decodePayload(String token) throws JsonMappingException, JsonProcessingException {
+	public void decodePayload(String token) throws JsonProcessingException {
 		String[] parts = token.split("\\.", -1);
 		String payloadEncoded = parts[1];
 		
@@ -205,10 +201,9 @@ public class JSONWebToken {
 	 * Создание объекта JWT
 	 * 
 	 * @return JWT
-	 * @throws JsonMappingException
 	 * @throws JsonProcessingException
 	 */
-	public static JSONWebToken createJWT() throws JsonMappingException, JsonProcessingException {
+	public static JSONWebToken createJWT() throws JsonProcessingException {
 		return new JSONWebToken();
 	}
 	
@@ -217,10 +212,9 @@ public class JSONWebToken {
 	 * @param playerId 
 	 * 
 	 * @return JSONWebToken объект
-	 * @throws JsonMappingException
 	 * @throws JsonProcessingException
 	 */
-	public static JSONWebToken createJWT(Long playerId) throws JsonMappingException, JsonProcessingException {
+	public static JSONWebToken createJWT(Long playerId) throws JsonProcessingException {
 		return new JSONWebToken(playerId);
 	}
 	

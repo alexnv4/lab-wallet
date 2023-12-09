@@ -32,10 +32,10 @@ public class AuthorizationServlet extends HttpServlet {
 	private static final long serialVersionUID = 2L;
 	
 	/** Вспомогательный класс. */
-	private Utility util;
+	private transient Utility util;
 	
 	/** Вспомогательный класс для HTTP сервлетов. */
-	private ServletsUtility servletsUtil;
+	private transient ServletsUtility servletsUtil;
 	
 	/**
 	 * Создание сервлета авторизации игрока.
@@ -88,18 +88,12 @@ public class AuthorizationServlet extends HttpServlet {
 			util.logMessage("Токен сгенерирован для игрока " + registeredLogin);
 			
 			responseCode = SC_OK;
-		} catch (AuthorizationException e) {
+		} catch (AuthorizationException | JsonProcessingException e) {
 			e.printStackTrace();
 			servletsUtil.respondWithError(response, responseCode, e.getMessage());
 			return;
-		} catch (InvalidKeyException e) {
+		} catch (InvalidKeyException | NoSuchAlgorithmException e) {
 			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			servletsUtil.respondWithError(response, responseCode, e.getMessage());
-			return;
 		} finally {
 			// Стирание пароля в DTO независимо от результата авторизации
 			char[] zeroPassword = new char[] { '0' };

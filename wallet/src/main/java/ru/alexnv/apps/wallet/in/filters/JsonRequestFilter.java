@@ -22,7 +22,7 @@ public class JsonRequestFilter extends HttpFilter implements Filter {
     private static final long serialVersionUID = 2379993274829435135L;
     
 	/** Вспомогательный класс для HTTP сервлетов. */
-	private ServletsUtility servletsUtil;
+	private transient ServletsUtility servletsUtil;
 
 	/**
 	 * Instantiates a new json request filter.

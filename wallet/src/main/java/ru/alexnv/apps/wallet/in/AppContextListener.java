@@ -23,13 +23,6 @@ import ru.alexnv.apps.wallet.service.PlayerService;
 public class AppContextListener implements ServletContextListener {
 
 	/**
-	 * Создание контекста сервлета
-	 */
-	public AppContextListener() {
-		
-	}
-
-	/**
 	 * Инициализация контекста сервлета. Создаётся соединение с БД.
 	 * Выполняется внедрение всех зависимостей. Выполняются миграции.
 	 */

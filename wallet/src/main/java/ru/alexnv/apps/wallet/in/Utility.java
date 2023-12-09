@@ -11,12 +11,12 @@ public class Utility {
 	/**
 	 * Выходной поток данных
 	 */
-	private final PrintStream outputStream = System.out;
+	private static final PrintStream OUTPUT_STREAM = System.out;
 	
 	/**
 	 * Выходной поток ошибок
 	 */
-	private final PrintStream errorStream = System.err;
+	private static final PrintStream ERROR_STREAM = System.err;
 
 	/**
 	 * Печать текста
@@ -35,7 +35,7 @@ public class Utility {
 	 * @param line
 	 */
 	public void printLine(String line) {
-		outputStream.println(line);
+		OUTPUT_STREAM.println(line);
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class Utility {
 	 * @param message
 	 */
 	public void logMessage(String message) {
-		errorStream.println(message);
+		ERROR_STREAM.println(message);
 	}
 
 }

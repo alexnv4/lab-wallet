@@ -27,10 +27,10 @@ public class RegisterServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	/** Вспомогательный класс. */
-	private Utility util;
+	private transient Utility util;
 	
 	/** Вспомогательный класс для HTTP сервлетов. */
-	private ServletsUtility servletsUtil;
+	private transient ServletsUtility servletsUtil;
 	
     /**
      * Создание сервлета регистрации игрока.

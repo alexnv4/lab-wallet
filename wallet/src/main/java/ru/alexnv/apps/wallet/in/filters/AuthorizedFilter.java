@@ -86,15 +86,13 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
 				} else { // токен есть в заголовке, но он не валиден
 					responseCode = SC_FORBIDDEN;
 				}
-			} catch (InvalidKeyException e) {
+			} catch (InvalidKeyException | NoSuchAlgorithmException e) {
 				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			}
+			} 
 		}
 
-		ServletsUtility util = new ServletsUtility();
-		util.respondWithError(httpResponse, responseCode, "Доступ запрещён. Проверьте токен и ID игрока.");
+		ServletsUtility servletsutil = new ServletsUtility();
+		servletsutil.respondWithError(httpResponse, responseCode, "Доступ запрещён. Проверьте токен и ID игрока.");
 	}
 
 	/**
@@ -107,8 +105,7 @@ public class AuthorizedFilter extends HttpFilter implements Filter {
 		String pathInfo = request.getPathInfo();
 		String[] parts = pathInfo.split("/");
 		if (parts.length == 3 && parts[1].matches("\\d+")) {
-			Long playerIdURI = Long.valueOf(parts[1]);
-			return playerIdURI;
+			return Long.valueOf(parts[1]);
 		}
 		return null;
 	}

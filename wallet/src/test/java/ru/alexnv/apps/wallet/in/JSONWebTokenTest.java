@@ -25,14 +25,6 @@ class JSONWebTokenTest {
 	}
 
 	/**
-	 * Test method for {@link ru.alexnv.apps.wallet.in.JSONWebToken#generate()}.
-	 */
-	//@Test
-	final void testGenerate() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
 	 * Test method for {@link ru.alexnv.apps.wallet.in.JSONWebToken#isValidToken(java.lang.String)}.
 	 * @throws NoSuchAlgorithmException 
 	 * @throws InvalidKeyException 

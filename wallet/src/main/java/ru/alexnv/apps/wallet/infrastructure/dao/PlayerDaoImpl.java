@@ -80,11 +80,8 @@ public class PlayerDaoImpl implements PlayerDao {
 			statement.setBigDecimal(1, player.getBalanceNumeric());
 			statement.setLong(2, player.getId());
 			int rowsAffected = statement.executeUpdate();
-			if (rowsAffected > 0) {
-				return true;
-			}
-			return false;
-
+			return (rowsAffected > 0);
+			
 		} catch (SQLException e) {
 			throw new DaoException("Ошибка обновления баланса игрока id: " + player.getId(), e);
 		}
@@ -136,8 +133,8 @@ public class PlayerDaoImpl implements PlayerDao {
 		final String sql = "SELECT * FROM wallet_schema.players ORDER BY login;";
 		List<Player> players = new ArrayList<>();
 
-		// try (PreparedStatement statement = connection.prepareStatement(sql);
-		try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(sql)) {
+		try (Statement statement = connection.createStatement();
+			 ResultSet resultSet = statement.executeQuery(sql)) {
 
 			while (resultSet.next()) {
 				long id = resultSet.getLong("player_id");

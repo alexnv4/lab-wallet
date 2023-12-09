@@ -102,7 +102,7 @@ class PlayerServiceTest extends ContainerEnvironment {
 		String registeredLogin = playerService.registration(login, password);
 
 		// then
-		assertTrue(login.equals(registeredLogin));
+		assertEquals(login, registeredLogin);
 	}
 
 	@Test
@@ -135,7 +135,7 @@ class PlayerServiceTest extends ContainerEnvironment {
 
 		String authorizedLogin = playerService.authorize(login, password);
 
-		assertTrue(login.equals(authorizedLogin));
+		assertEquals(login, authorizedLogin);
 	}
 
 	@Test

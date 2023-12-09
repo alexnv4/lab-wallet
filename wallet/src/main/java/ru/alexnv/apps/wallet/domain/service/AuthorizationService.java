@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import liquibase.exception.DatabaseException;
 import ru.alexnv.apps.wallet.domain.model.Player;
 import ru.alexnv.apps.wallet.domain.model.Transaction;
+import ru.alexnv.apps.wallet.domain.service.exceptions.DatabaseException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoSuchPlayerException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.WrongPasswordException;
@@ -63,14 +63,14 @@ public class AuthorizationService {
 			List<Player> players = playerDao.getAll();
 
 			// Проверка логина и пароля игрока
-			for (Player player : players) {
-				if (player.getLogin().equals(login)) {
-					if (!password.equals(player.getPassword())) {
+			for (Player playerElement : players) {
+				if (playerElement.getLogin().equals(login)) {
+					if (!password.equals(playerElement.getPassword())) {
 						throw new WrongPasswordException("Неправильный пароль.");
 					}
 					
 					// Логин игрока
-					this.setPlayer(player);
+					this.setPlayer(playerElement);
 					return player;
 				}
 			}

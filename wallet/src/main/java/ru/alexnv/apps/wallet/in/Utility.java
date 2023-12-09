@@ -17,21 +17,21 @@ public class Utility {
 	/**
 	 * Разделитель для печати меню
 	 */
-	private static final String delimiter = "----------------------------";
+	private static final String DELIMITER = "----------------------------";
 
 	/**
 	 * Входной поток данных
 	 */
-	private final InputStream inputStream = System.in;
+	private static final InputStream INPUT_STREAM = System.in;
 
 	/**
 	 * Выходной поток данных
 	 */
-	private final PrintStream outputStream = System.out;
+	private static final PrintStream OUTPUT_STREAM = System.out;
 	/**
 	 * Объект для ввода из консоли
 	 */
-	private Scanner scanner = new Scanner(inputStream);
+	private Scanner scanner = new Scanner(INPUT_STREAM);
 
 	/**
 	 * Вывод текста и ввод целого числа
@@ -41,7 +41,7 @@ public class Utility {
 	 * @throws NotNumberException введено не число
 	 */
 	protected int getUserChoice(String[] text) throws NotNumberException {
-		printLine(delimiter);
+		printLine(DELIMITER);
 		printText(text);
 
 		int choice = getInt();
@@ -65,7 +65,7 @@ public class Utility {
 	 * @param line
 	 */
 	public void printLine(String line) {
-		outputStream.println(line);
+		OUTPUT_STREAM.println(line);
 	}
 
 	/**

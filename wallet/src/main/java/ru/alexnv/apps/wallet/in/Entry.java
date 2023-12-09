@@ -20,13 +20,13 @@ public class Entry {
 	/**
 	 * Стартовое меню
 	 */
-	private final static Map<Integer, String> welcomeMenu = new LinkedHashMap<>();
+	private static final Map<Integer, String> welcomeMenu = new LinkedHashMap<>();
 			
 	
 	/**
 	 * Меню залогиненного игрока
 	 */
-	private final static Map<Integer, String> loggedMenu = new LinkedHashMap<>();
+	private static final Map<Integer, String> loggedMenu = new LinkedHashMap<>();
 
 	/**
 	 * Служба приложения, устанавливаемая внешним слоем

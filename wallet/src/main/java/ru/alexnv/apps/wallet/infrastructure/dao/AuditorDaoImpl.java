@@ -58,8 +58,6 @@ public class AuditorDaoImpl implements AuditorDao {
 					throw new DaoException("Ошибка получения сгенерированного ID.");
 				}
 
-				// long id = resultSet.getInt(1);
-				// action.setId(id);
 				return action;
 			}
 		} catch (SQLException e) {

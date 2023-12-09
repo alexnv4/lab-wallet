@@ -1,11 +1,12 @@
 package ru.alexnv.apps.wallet.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
-import liquibase.exception.DatabaseException;
 import ru.alexnv.apps.wallet.domain.service.AuthorizationService;
 import ru.alexnv.apps.wallet.domain.service.RegistrationService;
+import ru.alexnv.apps.wallet.domain.service.exceptions.DatabaseException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoMoneyLeftException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.NoSuchPlayerException;
 import ru.alexnv.apps.wallet.domain.service.exceptions.PlayerAlreadyExistsException;
@@ -174,7 +175,7 @@ public class PlayerService {
 		try {
 			return authorizationService.getTransactionsHistory();
 		} catch (DatabaseException e) {
-			return null;
+			return new ArrayList<>();
 		}
 	}
 

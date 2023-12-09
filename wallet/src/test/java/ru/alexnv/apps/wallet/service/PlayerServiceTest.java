@@ -2,7 +2,6 @@ package ru.alexnv.apps.wallet.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -105,7 +104,7 @@ class PlayerServiceTest extends ContainerEnvironment {
 		String registeredLogin = playerService.registration(login, password.toCharArray());
 
 		// then
-		assertTrue(login.equals(registeredLogin));
+		assertEquals(login, registeredLogin);
 	}
 
 	@Test
@@ -138,7 +137,7 @@ class PlayerServiceTest extends ContainerEnvironment {
 
 		String authorizedLogin = playerService.authorize(login, password.toCharArray()).getLogin();
 
-		assertTrue(login.equals(authorizedLogin));
+		assertEquals(login, authorizedLogin);
 	}
 
 	@Test

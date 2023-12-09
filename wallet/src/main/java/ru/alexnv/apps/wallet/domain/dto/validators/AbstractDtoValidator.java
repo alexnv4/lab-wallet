@@ -16,8 +16,8 @@ public abstract class AbstractDtoValidator {
 	/**
 	 * Создание DTO валидатора.
 	 */
-	public AbstractDtoValidator() {
-		violations = new ArrayList<String>();
+	protected AbstractDtoValidator() {
+		violations = new ArrayList<>();
 	}
 	
 	/**

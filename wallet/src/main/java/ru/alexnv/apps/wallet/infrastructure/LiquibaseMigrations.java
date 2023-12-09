@@ -28,7 +28,7 @@ public class LiquibaseMigrations {
 	/**
 	 * Имя файла свойств БД и liquibase
 	 */
-	private static final String liquibaseFileName = "liquibase.properties";
+	private static final String LIQUIBASE_FILE_NAME = "liquibase.properties";
 
 	/**
 	 * Свойства миграций, считываются из файла
@@ -60,7 +60,7 @@ public class LiquibaseMigrations {
 	 */
 	public LiquibaseMigrations() {
 		props = new Properties();
-		try (InputStream is = getClass().getClassLoader().getResourceAsStream(liquibaseFileName)) {
+		try (InputStream is = getClass().getClassLoader().getResourceAsStream(LIQUIBASE_FILE_NAME)) {
 			props.load(is);
 			changeLogFile = props.getProperty("changeLogFile");
 			defaultSchemaName = props.getProperty("defaultSchemaName");

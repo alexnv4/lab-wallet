@@ -30,14 +30,16 @@ import ru.alexnv.apps.wallet.service.exceptions.FindPlayerByIdException;
 @Loggable
 public class OperationsServlet extends HttpServlet {
 	
+	private static final String PLAYER_SERVICE_ATTRIBUTE = "PlayerService";
+
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
 	/** Вспомогательный класс. */
-	private Utility util;
+	private transient Utility util;
 	
 	/** Вспомогательный класс для HTTP сервлетов. */
-	private ServletsUtility servletsUtil;
+	private transient ServletsUtility servletsUtil;
 	
     /**
      * Создание сервлета операций игрока.
@@ -72,7 +74,11 @@ public class OperationsServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	String path = request.getPathInfo();
     	
-    	if (path != null && path.endsWith("/balance")) {
+    	if (path == null) {
+    		return;
+    	}
+    	
+    	if (path.endsWith("/balance")) {
     		PlayerDto playerDto;
     		
 			try {
@@ -86,7 +92,7 @@ public class OperationsServlet extends HttpServlet {
     		servletsUtil.respondWithJson(response, SC_OK, playerDto);
     		
     	} else if (path.endsWith("/transactions")) {
-    		var playerService = (PlayerService) getServletContext().getAttribute("PlayerService");
+    		var playerService = (PlayerService) getServletContext().getAttribute(PLAYER_SERVICE_ATTRIBUTE);
     		List<TransactionDto> transactionsDto = new ArrayList<>();
 			try {
 				transactionsDto = playerService.getTransactionsHistory(AuthorizedFilter.getPlayerIdFromURI(request));
@@ -108,9 +114,8 @@ public class OperationsServlet extends HttpServlet {
      * @throws FindPlayerByIdException игрок с таким ID не найден
      */
     private PlayerDto getPlayerDto(HttpServletRequest request) throws FindPlayerByIdException {
-    	var playerService = (PlayerService) getServletContext().getAttribute("PlayerService");
-    	PlayerDto playerDto = playerService.getBalance(AuthorizedFilter.getPlayerIdFromURI(request));
-    	return playerDto;
+    	var playerService = (PlayerService) getServletContext().getAttribute(PLAYER_SERVICE_ATTRIBUTE);
+    	return playerService.getBalance(AuthorizedFilter.getPlayerIdFromURI(request));
     }
 
 	/**
@@ -144,7 +149,7 @@ public class OperationsServlet extends HttpServlet {
 			return;
 		}
 		
-		var playerService = (PlayerService) getServletContext().getAttribute("PlayerService");
+		var playerService = (PlayerService) getServletContext().getAttribute(PLAYER_SERVICE_ATTRIBUTE);
 		Long transactionId = balanceChangeDto.getTransactionId();
 		PlayerDto playerDto = null;
 		Long playerId = AuthorizedFilter.getPlayerIdFromURI(request);

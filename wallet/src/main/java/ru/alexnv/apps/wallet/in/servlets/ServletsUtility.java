@@ -23,7 +23,7 @@ import ru.alexnv.apps.wallet.in.Utility;
 public class ServletsUtility {
 	
 	/** Шаблон ошибки JSON. */
-	public static String messageJson = """
+	public static final String MESSAGE_JSON = """
 			{
 			  "message": %s
 			}
@@ -43,7 +43,7 @@ public class ServletsUtility {
 	 * @throws IOException ошибка ввода-вывода
 	 */
 	public void respondWithError(HttpServletResponse response, int statusCode, String reason) throws IOException {
-		String json = String.format(messageJson, "\"" + reason + "\"");
+		String json = String.format(MESSAGE_JSON, "\"" + reason + "\"");
 		
 		sendJson(response, statusCode, json);
 		util.logMessage(reason);
@@ -64,7 +64,7 @@ public class ServletsUtility {
 
 		String stringsArray = serializeToJson(errors);
 		
-		String json = String.format(messageJson, stringsArray.toString());
+		String json = String.format(MESSAGE_JSON, stringsArray);
 		
 		sendJson(response, statusCode, json);
 	}
@@ -124,8 +124,7 @@ public class ServletsUtility {
 	 */
 	public List<String> validateDto(AbstractDto dto) throws IllegalArgumentException, IllegalAccessException {
 		var dtoValidator = new DtoValidator();
-		List<String> violations = dtoValidator.validate(dto);
-		return violations;
+		return dtoValidator.validate(dto);
 	}
 
 	/**
@@ -142,8 +141,7 @@ public class ServletsUtility {
 		var objectMapper = new ObjectMapper();
 
 		String body = request.getReader().lines().collect(Collectors.joining());
-		T dto = objectMapper.readValue(body, dtoClass);
-		return dto;
+		return objectMapper.readValue(body, dtoClass);
 	}
 	
 	/**

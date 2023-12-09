@@ -20,7 +20,7 @@ import ru.alexnv.apps.wallet.dao.TransactionDaoImpl;
 public class PostgreSqlDaoFactory implements DaoFactory {
 
 	/** Имя файла, в котором хранятся настройки БД. */
-	private static final String liquibaseFileName = "liquibase.properties";
+	private static final String LIQUIBASE_FILE_NAME = "liquibase.properties";
 
 	/** Имя пользователя БД. */
 	private String user;
@@ -48,7 +48,7 @@ public class PostgreSqlDaoFactory implements DaoFactory {
 	public PostgreSqlDaoFactory(boolean readProperties) {
 		if (readProperties) {
 			props = new Properties();
-			try (InputStream is = getClass().getClassLoader().getResourceAsStream(liquibaseFileName)) {
+			try (InputStream is = getClass().getClassLoader().getResourceAsStream(LIQUIBASE_FILE_NAME)) {
 				props.load(is);
 				driver = props.getProperty("driver");
 				url = props.getProperty("url");

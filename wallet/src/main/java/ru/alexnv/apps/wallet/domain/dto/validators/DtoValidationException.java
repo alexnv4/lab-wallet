@@ -14,7 +14,7 @@ public class DtoValidationException extends Exception {
 	private static final long serialVersionUID = 8079654819257993595L;
 	
 	/** Список нарушений. */
-	private List<String> violations;
+	private final List<String> violations;
 
 	/**
 	 * Создание исключения со списком нарушений.

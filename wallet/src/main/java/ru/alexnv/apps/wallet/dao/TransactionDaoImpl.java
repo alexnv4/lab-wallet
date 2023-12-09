@@ -66,14 +66,12 @@ public class TransactionDaoImpl implements TransactionDao {
 
 	@Override
 	public boolean update(Transaction object) throws DaoException {
-		// TODO Auto-generated method stub
-		return false;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public boolean delete(Transaction object) throws DaoException {
-		// TODO Auto-generated method stub
-		return false;
+		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -100,8 +98,7 @@ public class TransactionDaoImpl implements TransactionDao {
 				BigDecimal balanceAfter = resultSet.getBigDecimal("balance_after");
 				LocalDateTime localDateTime = resultSet.getObject("date", LocalDateTime.class);
 
-				Transaction transaction = new Transaction(id, balanceBefore, balanceAfter, null, localDateTime);
-				return transaction;
+				return new Transaction(id, balanceBefore, balanceAfter, null, localDateTime);
 			}
 		} catch (SQLException e) {
 			throw new DaoException("Ошибка поиска транзакции: ", e);
@@ -110,8 +107,7 @@ public class TransactionDaoImpl implements TransactionDao {
 
 	@Override
 	public List<Transaction> getAll() throws DaoException {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

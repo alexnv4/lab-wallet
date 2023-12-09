@@ -78,8 +78,7 @@ public class RegistrationService {
 	 */
 	private Player readPlayer(String login) throws DaoException {
 		try {
-			Player player = playerDao.findByLogin(login);
-			return player;
+			return playerDao.findByLogin(login);
 		} catch (NotFoundException e) {
 			return null;
 		}

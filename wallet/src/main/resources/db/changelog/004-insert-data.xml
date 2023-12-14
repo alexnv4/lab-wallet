@@ -6,8 +6,8 @@
     <changeSet id="001-insert-player-data" author="alexnv">
         <insert tableName="players">
             <column name="login" value="player1"/>
-            <column name="password" value="pass1"/>
-            <column name="balance" value="0"/>
+            <column name="password" value="$argon2id$v=19$m=65536,t=3,p=1$9tnsiBBamJryJ3lgqYfpKQ$SrimIXIpuiADj0Hb/4Bs1UnTij7bJbD/U6Yur7KP/wU"/>
+            <column name="balance" value="100.00"/>
         </insert>
     </changeSet>
 </databaseChangeLog>

@@ -6,9 +6,9 @@ package ru.alexnv.apps.wallet.infrastructure;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import ru.alexnv.apps.wallet.infrastructure.dao.AuditorDao;
-import ru.alexnv.apps.wallet.infrastructure.dao.PlayerDao;
-import ru.alexnv.apps.wallet.infrastructure.dao.TransactionDao;
+import ru.alexnv.apps.wallet.dao.AuditorDao;
+import ru.alexnv.apps.wallet.dao.PlayerDao;
+import ru.alexnv.apps.wallet.dao.TransactionDao;
 
 /**
  * Фабрика DAO
@@ -20,6 +20,13 @@ public interface DaoFactory {
 	 * @throws SQLException
 	 */
 	Connection getConnection() throws SQLException;
+	
+	/**
+	 * Закрытие соединения
+	 * 
+	 * @throws SQLException
+	 */
+	void closeConnection() throws SQLException;
 
 	/**
 	 * @param connection

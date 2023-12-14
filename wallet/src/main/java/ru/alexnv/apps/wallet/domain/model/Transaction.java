@@ -3,6 +3,8 @@ package ru.alexnv.apps.wallet.domain.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import ru.alexnv.apps.wallet.domain.mappers.Default;
+
 /**
  * Модель предметной области - транзакция
  */
@@ -11,7 +13,7 @@ public class Transaction {
 	/**
 	 * Идентификатор транзакции
 	 */
-	private long id;
+	private Long id;
 
 	/**
 	 * Баланс до совершения транзакции
@@ -34,12 +36,13 @@ public class Transaction {
 	private LocalDateTime dateTime;
 
 	/**
+	 * @param id
 	 * @param balanceBefore
 	 * @param balanceAfter
 	 * @param player
 	 */
-	public Transaction(Player player, BigDecimal balanceBefore, BigDecimal balanceAfter) {
-		super();
+	public Transaction(Long id, Player player, BigDecimal balanceBefore, BigDecimal balanceAfter) {
+		this.id = id;
 		this.player = player;
 		this.balanceBefore = balanceBefore;
 		this.balanceAfter = balanceAfter;
@@ -53,20 +56,23 @@ public class Transaction {
 	 * @param player
 	 * @param dateTime
 	 */
-	public Transaction(long id, BigDecimal balanceBefore, BigDecimal balanceAfter, Player player,
-			LocalDateTime dateTime) {
-		this(balanceBefore, balanceAfter, player, dateTime);
-		this.id = id;
+	public Transaction(Long id, BigDecimal balanceBefore, BigDecimal balanceAfter, Player player, LocalDateTime dateTime) {
+		this(id, player, balanceBefore, balanceAfter);
+		this.dateTime = dateTime;
 	}
 
 	/**
+	 * @param id
 	 * @param balanceBefore
 	 * @param balanceAfter
-	 * @param player
 	 * @param dateTime
 	 */
-	public Transaction(BigDecimal balanceBefore, BigDecimal balanceAfter, Player player, LocalDateTime dateTime) {
-		this(player, balanceBefore, balanceAfter);
+	@Default
+	public Transaction(Long id, BigDecimal balanceBefore, BigDecimal balanceAfter, LocalDateTime dateTime) {
+		super();
+		this.id = id;
+		this.balanceBefore = balanceBefore;
+		this.balanceAfter = balanceAfter;
 		this.dateTime = dateTime;
 	}
 
@@ -118,14 +124,14 @@ public class Transaction {
 	/**
 	 * @return the id
 	 */
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

@@ -1,22 +1,28 @@
 package ru.alexnv.apps.wallet.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.function.Executable;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import ru.alexnv.apps.wallet.domain.service.AuthorizationService;
+import ru.alexnv.apps.wallet.domain.service.PlayerOperationsService;
 import ru.alexnv.apps.wallet.domain.service.RegistrationService;
+import ru.alexnv.apps.wallet.domain.service.exceptions.TransactionIdNotUniqueException;
 import ru.alexnv.apps.wallet.infrastructure.LiquibaseMigrations;
 import ru.alexnv.apps.wallet.infrastructure.PostgreSqlDaoFactory;
 import ru.alexnv.apps.wallet.service.config.ContainerEnvironment;
 import ru.alexnv.apps.wallet.service.exceptions.AuthorizationException;
+import ru.alexnv.apps.wallet.service.exceptions.DebitException;
+import ru.alexnv.apps.wallet.service.exceptions.FindPlayerByIdException;
 import ru.alexnv.apps.wallet.service.exceptions.RegistrationException;
 
 @DisplayName("PlayerService test class")
@@ -27,6 +33,7 @@ class PlayerServiceTest extends ContainerEnvironment {
 	private static AuthorizationService authorizationService;
 
 	private static java.sql.Connection connection = null;
+	private static PlayerOperationsService playerOperationsService = null;
 
 	@BeforeAll
 	@DisplayName("Инициализация")
@@ -42,10 +49,11 @@ class PlayerServiceTest extends ContainerEnvironment {
 			e.printStackTrace();
 		}
 
-		authorizationService = new AuthorizationService(daoFactory.getPlayerDao(connection),
-				daoFactory.getTransactionDao(connection));
+		authorizationService = new AuthorizationService(daoFactory.getPlayerDao(connection));
 		registrationService = new RegistrationService(daoFactory.getPlayerDao(connection));
-		playerService = new PlayerService(authorizationService, registrationService,
+		playerOperationsService  = new PlayerOperationsService(
+				daoFactory.getPlayerDao(connection), daoFactory.getTransactionDao(connection));
+		playerService = new PlayerService(authorizationService, registrationService, playerOperationsService,
 				daoFactory.getAuditorDao(connection));
 
 		// Запуск миграций
@@ -54,13 +62,6 @@ class PlayerServiceTest extends ContainerEnvironment {
 		connection.close();
 		connection = null;
 	}
-
-//	@AfterAll
-//	static void cleanup() throws SQLException {
-//		if (connection != null) {
-//			connection.close();
-//		}
-//	}
 
 	@BeforeEach
 	void init() {
@@ -75,11 +76,12 @@ class PlayerServiceTest extends ContainerEnvironment {
 			e.printStackTrace();
 		}
 
-		authorizationService = new AuthorizationService(daoFactory.getPlayerDao(connection),
-				daoFactory.getTransactionDao(connection));
+		authorizationService = new AuthorizationService(daoFactory.getPlayerDao(connection));
 		registrationService = new RegistrationService(daoFactory.getPlayerDao(connection));
-		playerService = new PlayerService(authorizationService, registrationService,
-				daoFactory.getAuditorDao(connection));
+		playerOperationsService  = new PlayerOperationsService(
+				daoFactory.getPlayerDao(connection), daoFactory.getTransactionDao(connection));
+		playerService = new PlayerService(authorizationService, registrationService, playerOperationsService,
+				daoFactory.getAuditorDao(connection));;
 	}
 
 	@AfterEach
@@ -99,10 +101,10 @@ class PlayerServiceTest extends ContainerEnvironment {
 		String password = "password1";
 
 		// when
-		String registeredLogin = playerService.registration(login, password);
+		String registeredLogin = playerService.registration(login, password.toCharArray());
 
 		// then
-		assertTrue(login.equals(registeredLogin));
+		assertEquals(login, registeredLogin);
 	}
 
 	@Test
@@ -113,13 +115,13 @@ class PlayerServiceTest extends ContainerEnvironment {
 		String login = "login2";
 		String password = "password2";
 		try {
-			playerService.registration(login, password);
+			playerService.registration(login, password.toCharArray());
 		} catch (RegistrationException e) {
 			e.printStackTrace();
 		}
 
 		// when
-		Executable executable = () -> playerService.registration(login, password);
+		Executable executable = () -> playerService.registration(login, password.toCharArray());
 
 		// then
 		assertThrows(RegistrationException.class, executable);
@@ -131,11 +133,11 @@ class PlayerServiceTest extends ContainerEnvironment {
 		String login = "login3";
 		String password = "password3";
 
-		playerService.registration(login, password);
+		playerService.registration(login, password.toCharArray());
 
-		String authorizedLogin = playerService.authorize(login, password);
+		String authorizedLogin = playerService.authorize(login, password.toCharArray()).getLogin();
 
-		assertTrue(login.equals(authorizedLogin));
+		assertEquals(login, authorizedLogin);
 	}
 
 	@Test
@@ -144,7 +146,7 @@ class PlayerServiceTest extends ContainerEnvironment {
 		String login = "login9";
 		String password = "password4";
 
-		Executable executable = () -> playerService.authorize(login, password);
+		Executable executable = () -> playerService.authorize(login, password.toCharArray());
 
 		assertThrows(AuthorizationException.class, executable);
 	}
@@ -156,53 +158,41 @@ class PlayerServiceTest extends ContainerEnvironment {
 		String password = "password4";
 		String incorrectPassword = "password999";
 
-		playerService.registration(login, password);
+		playerService.registration(login, password.toCharArray());
 
-		Executable executable = () -> playerService.authorize(login, incorrectPassword);
+		Executable executable = () -> playerService.authorize(login, incorrectPassword.toCharArray());
 
 		assertThrows(AuthorizationException.class, executable);
 	}
 
 	@Test
-	@DisplayName("Возврат null при выходе из аккаунта")
-	void should_ReturnNull_WhenLogout() throws AuthorizationException, RegistrationException {
-		String login = "login5";
-		String password = "password5";
-
-		playerService.registration(login, password);
-		playerService.authorize(login, password);
-		playerService.logout();
-
-		assertNull(authorizationService.getPlayer());
-	}
-
-	@Test
 	@DisplayName("Возврат баланса после кредита")
-	void should_ReturnBalance_WhenCredited() throws AuthorizationException, RegistrationException {
+	void should_ReturnBalance_WhenCredited() throws AuthorizationException, RegistrationException, TransactionIdNotUniqueException, FindPlayerByIdException {
 		String login = "login6";
 		String password = "password6";
 		BigDecimal amount = new BigDecimal("5.67");
 
-		playerService.registration(login, password);
-		playerService.authorize(login, password);
-		playerService.credit(amount);
-		String actual = playerService.getBalance();
+		playerService.registration(login, password.toCharArray());
+		Long playerId = playerService.authorize(login, password.toCharArray()).getId();
+		playerService.credit(playerId, amount, 99999L);
+		String actual = playerService.getBalance(playerId).getBalance();
 
 		assertEquals(amount.toString(), actual);
 	}
 
 	@Test
 	@DisplayName("Возврат баланса после дебета")
-	void should_ReturnBalance_WhenDebited() throws AuthorizationException, RegistrationException {
+	void should_ReturnBalance_WhenDebited()
+			throws AuthorizationException, RegistrationException, TransactionIdNotUniqueException, DebitException, FindPlayerByIdException {
 		String login = "login7";
 		String password = "password7";
 		BigDecimal amount = new BigDecimal("5.67");
 
-		playerService.registration(login, password);
-		playerService.authorize(login, password);
-		playerService.credit(amount);
-		playerService.debit(new BigDecimal("2.34"));
-		String actual = playerService.getBalance();
+		playerService.registration(login, password.toCharArray());
+		Long playerId = playerService.authorize(login, password.toCharArray()).getId();
+		playerService.credit(playerId, amount, 99998L);
+		playerService.debit(playerId, new BigDecimal("2.34"), 999997L);
+		String actual = playerService.getBalance(playerId).getBalance();
 
 		assertEquals("3.33", actual);
 	}

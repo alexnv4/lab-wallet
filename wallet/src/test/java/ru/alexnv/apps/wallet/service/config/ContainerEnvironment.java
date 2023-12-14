@@ -15,6 +15,9 @@ import ru.alexnv.apps.wallet.service.containers.PostgresTestContainer;
 @Testcontainers
 public class ContainerEnvironment {
 
+	/**
+	 * Докер контейнер с PostgreSQL 
+	 */
 	@Container
 	public static PostgreSQLContainer<?> postgreSQLContainer = PostgresTestContainer.getInstance();
 }

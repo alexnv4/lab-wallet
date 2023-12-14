@@ -3,8 +3,8 @@ package ru.alexnv.apps.wallet.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.alexnv.apps.wallet.infrastructure.dao.AuditorDao;
-import ru.alexnv.apps.wallet.infrastructure.dao.DaoException;
+import ru.alexnv.apps.wallet.dao.AuditorDao;
+import ru.alexnv.apps.wallet.dao.DaoException;
 
 /**
  * Аудит всех действий игрока
@@ -21,6 +21,11 @@ public class Auditor {
 	 */
 	private AuditorDao auditorDao;
 
+	/**
+	 * Создание аудита действий игрока
+	 * 
+	 * @param auditorDao DAO аудита
+	 */
 	public Auditor(AuditorDao auditorDao) {
 		actions = new ArrayList<>();
 		this.auditorDao = auditorDao;

@@ -17,10 +17,18 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
 import org.mockito.MockedStatic;
 
 import jakarta.servlet.FilterChain;
@@ -62,14 +70,17 @@ class AuthorizedFilterTest {
 		verify(chain, times(1)).doFilter(request, response);
 	}
 	
-	@Test
-	final void should_returnRespondWith403_when_TokenFirstPartIncorrect() throws IOException, ServletException {
+	private static record TokenTestCase(String token, String endpoint, int statusCode) { };
+	
+	@ParameterizedTest
+	@MethodSource("tokenSource")
+	final void testTokensWithEndpointsAndRepsponses(TokenTestCase tokenTestCase) throws IOException, ServletException {
 		FilterChain chain = mock(FilterChain.class);
 
 		PrintWriter mockWriter = mock(PrintWriter.class);
 		// Задаём нужные параметры для запроса
-		when(request.getPathInfo()).thenReturn("/2/balance");
-		when(request.getHeader("Authorization")).thenReturn("Bearer 123hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
+		when(request.getPathInfo()).thenReturn(tokenTestCase.endpoint);
+		when(request.getHeader("Authorization")).thenReturn(tokenTestCase.token);
 		when(response.getWriter()).thenReturn(mockWriter);
 
 		// Создаём экземпляр JsonRequestFilter
@@ -79,155 +90,33 @@ class AuthorizedFilterTest {
 		authorizedFilter.doFilter(request, response, chain);
 
 		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(403);
+		verify(response, times(1)).setStatus(tokenTestCase.statusCode);
 		verify(mockWriter, times(1)).flush();
 	}
 	
-	@Test
-	final void should_returnRespondWith403_when_TokenSignatureIncorrect() throws IOException, ServletException {
-		FilterChain chain = mock(FilterChain.class);
-
-		PrintWriter mockWriter = mock(PrintWriter.class);
-		// Задаём нужные параметры для запроса
-		when(request.getPathInfo()).thenReturn("/2/balance");
-		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.TAMPERED_SIGNATURE");
-		when(response.getWriter()).thenReturn(mockWriter);
+	static Stream<Arguments> tokenSource() {
+		List<TokenTestCase> cases = new ArrayList<>();
+		cases.add(new TokenTestCase("Bearer 123hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI", "/2/balance", 403));
+		cases.add(new TokenTestCase("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.TAMPERED_SIGNATURE", "/2/balance", 403));
+		cases.add(new TokenTestCase("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI", "/3/balance", 401));
+		cases.add(new TokenTestCase("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI", "/two/balance", 401));
+		cases.add(new TokenTestCase("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI", "//balance", 401));
+		cases.add(new TokenTestCase("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI", "/2.00/balance", 401));
+		cases.add(new TokenTestCase("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI", "/2/balance/add", 401));
+		cases.add(new TokenTestCase("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI", "/2/2/balance", 401));
 		
-		// Создаём экземпляр JsonRequestFilter
-		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
-
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(403);
-		verify(mockWriter, times(1)).flush();
-	}
-	
-	@Test
-	final void should_returnRespondWith401_when_IdURINotEqualsTokenPayloadSubId() throws IOException, ServletException {
-		FilterChain chain = mock(FilterChain.class);
-
-		PrintWriter mockWriter = mock(PrintWriter.class);
-		// Задаём нужные параметры для запроса
-		when(request.getPathInfo()).thenReturn("/3/balance");
-		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
-		when(response.getWriter()).thenReturn(mockWriter);
-
-		// Создаём экземпляр JsonRequestFilter
-		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
-
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(401);
-		verify(mockWriter, times(1)).flush();
-	}
-	
-	@Test
-	final void should_returnRespondWith401_when_IDNotNumber() throws IOException, ServletException {
-		FilterChain chain = mock(FilterChain.class);
-
-		PrintWriter mockWriter = mock(PrintWriter.class);
-		// Задаём нужные параметры для запроса
-		when(request.getPathInfo()).thenReturn("/two/balance");
-		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
-		when(response.getWriter()).thenReturn(mockWriter);
-
-		// Создаём экземпляр JsonRequestFilter
-		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
-
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(401);
-		verify(mockWriter, times(1)).flush();		
-	}
-	
-	@Test
-	final void should_returnRespondWith401_when_IDNotSet() throws IOException, ServletException {
-		FilterChain chain = mock(FilterChain.class);
-
-		PrintWriter mockWriter = mock(PrintWriter.class);
-		// Задаём нужные параметры для запроса
-		when(request.getPathInfo()).thenReturn("//balance");
-		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
-		when(response.getWriter()).thenReturn(mockWriter);
-
-		// Создаём экземпляр JsonRequestFilter
-		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
-
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(401);
-		verify(mockWriter, times(1)).flush();
-	}
-	
-	@Test
-	final void should_returnRespondWith401_when_IDTypeDouble() throws IOException, ServletException {
-		FilterChain chain = mock(FilterChain.class);
-
-		PrintWriter mockWriter = mock(PrintWriter.class);
-		// Задаём нужные параметры для запроса
-		when(request.getPathInfo()).thenReturn("/2.00/balance");
-		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
-		when(response.getWriter()).thenReturn(mockWriter);
-
-		// Создаём экземпляр JsonRequestFilter
-		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
-
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(401);
-		verify(mockWriter, times(1)).flush();
-	}
-	
-	@Test
-	final void should_returnRespondWith401_when_URIEndsWithNotBalance() throws IOException, ServletException {
-		FilterChain chain = mock(FilterChain.class);
-
-		PrintWriter mockWriter = mock(PrintWriter.class);
-		// Задаём нужные параметры для запроса
-		when(request.getPathInfo()).thenReturn("/2/balance/add");
-		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
-		when(response.getWriter()).thenReturn(mockWriter);
-
-		// Создаём экземпляр JsonRequestFilter
-		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
-
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(401);
-		verify(mockWriter, times(1)).flush();
-	}
-	
-	@Test
-	final void should_returnRespondWith401_when_URIHasSeveralIDs() throws IOException, ServletException {
-		FilterChain chain = mock(FilterChain.class);
-
-		PrintWriter mockWriter = mock(PrintWriter.class);
-		// Задаём нужные параметры для запроса
-		when(request.getPathInfo()).thenReturn("/2/2/balance");
-		when(request.getHeader("Authorization")).thenReturn("Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjJ9.d8ViCOHe7bISbLUjKJ0m2bfr6dLpVNoUVMSM_J8oTAI");
-		when(response.getWriter()).thenReturn(mockWriter);
-
-		// Создаём экземпляр JsonRequestFilter
-		AuthorizedFilter authorizedFilter = new AuthorizedFilter();
-
-		// Вызываем метод doFilter
-		authorizedFilter.doFilter(request, response, chain);
-
-		// Проверяем выполнение фильтра
-		verify(response, times(1)).setStatus(401);
-		verify(mockWriter, times(1)).flush();
+		Iterator<TokenTestCase> caseIter = cases.iterator();
+		
+		return Stream.of(
+				Arguments.of(Named.of("Should respond with 403 when token's first part incorrect", caseIter.next())),
+				Arguments.of(Named.of("Should respond with 403 when token's signature is tampered", caseIter.next())),
+				Arguments.of(Named.of("Should respond with 401 when IdURI NotEquals Token's Payload SubId", caseIter.next())),
+				Arguments.of(Named.of("Should respond with 401 when ID is not a number", caseIter.next())),
+				Arguments.of(Named.of("Should respond with 401 when ID is not set", caseIter.next())),
+				Arguments.of(Named.of("Should respond with 401 when ID is of type double", caseIter.next())),
+				Arguments.of(Named.of("Should respond with 401 when URI doesn't end with balance", caseIter.next())),
+				Arguments.of(Named.of("Should respond with 401 when URI has multiple IDs", caseIter.next()))
+		);
 	}
 	
 	@Test

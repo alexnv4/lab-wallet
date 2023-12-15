@@ -8,9 +8,16 @@ import static org.mockito.Mockito.*;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.fasterxml.jackson.databind.*;
 
@@ -323,71 +330,41 @@ class OperationsServletTest {
 		verify(mockWriter, times(1)).flush();
 	}
 	
-	@Test
-	final void should_return400_whenParsingJSONtoBalanceChangeDTOFailed() throws ServletException, IOException {
-		String inputJson = """
+	static Stream<Arguments> invalidJSON() {
+		List<String> inputJsons = new ArrayList<>();
+		inputJsons.add("""
 				{
 				  "abcde": "1234",
 				  "fghjk": "56789"
 				}
-				""";
+				""");
 		
-		PrintWriter mockWriter = mock(PrintWriter.class);
-        // Задаём нужные параметры для запроса
-        when(request.getContentType()).thenReturn("application/json");
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/wallet/players/1/balance"));
-        when(request.getPathInfo()).thenReturn("/1/balance");
-		when(response.getWriter()).thenReturn(mockWriter);
-
-        // Создаём экземпляр OperationsServlet
-        OperationsServlet operationsServlet = new OperationsServlet();
-
-        // Вызываем метод doPatch
-        operationsServlet.doPatch(request, response);
-
-        // Проверяем статус код
-        verify(response, times(1)).setStatus(400);
-		verify(mockWriter, times(1)).flush();
-	}
-	
-	@Test
-	final void should_return400_whenBalanceChangeDTOValidationFailed() throws ServletException, IOException {
-		String inputJson = """
+		inputJsons.add("""
 				{
 				  "balanceChange": "123.55555",
 				  "transactionId": "-112"
 				}
-				""";
+				""");
 		
-		PrintWriter mockWriter = mock(PrintWriter.class);
-        // Задаём нужные параметры для запроса
-        when(request.getContentType()).thenReturn("application/json");
-        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(inputJson)));
-        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost:8080/wallet/players/1/balance"));
-        when(request.getPathInfo()).thenReturn("/1/balance");
-		when(response.getWriter()).thenReturn(mockWriter);
-
-        // Создаём экземпляр OperationsServlet
-        OperationsServlet operationsServlet = new OperationsServlet();
-
-        // Вызываем метод doPatch
-        operationsServlet.doPatch(request, response);
-
-        // Проверяем статус код
-        verify(response, times(1)).setStatus(400);
-		verify(mockWriter, times(1)).flush();
-	}
-	
-	@Test
-	final void should_return400_whenBalanceChangeZero() throws ServletException, IOException {
-		String inputJson = """
+		inputJsons.add("""
 				{
 				  "balanceChange": "0",
 				  "transactionId": "113"
 				}
-				""";
+				""");
 		
+		Iterator<String> jsonIter = inputJsons.iterator();
+		
+		return Stream.of(
+				Arguments.of(Named.of("Should return 400 when parsing JSON to BalanceChangeDTO Failed", jsonIter.next())),
+				Arguments.of(Named.of("Should return 400 when BalanceChangeDTO Validation Failed", jsonIter.next())),
+				Arguments.of(Named.of("Should return 400 when BalanceChangeZero", jsonIter.next()))
+		);
+	}
+	
+	@ParameterizedTest
+	@MethodSource("invalidJSON")
+	final void testInvalidInputJsons(String inputJson) throws ServletException, IOException {
 		PrintWriter mockWriter = mock(PrintWriter.class);
         // Задаём нужные параметры для запроса
         when(request.getContentType()).thenReturn("application/json");

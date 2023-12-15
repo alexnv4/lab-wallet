@@ -6,8 +6,12 @@ package ru.alexnv.apps.wallet.in;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.security.*;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -39,89 +43,34 @@ class JSONWebTokenTest {
 		assertTrue(tokenValid);
 	}
 	
-	@Test
-	final void should_returnFalseToken_when_incorrectTokenPassed() throws InvalidKeyException, NoSuchAlgorithmException {
-		
-		String token = "INCORRECTOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc";
-		
-		boolean tokenValid = jwt.isValidToken(token);
-		
-		assertFalse(tokenValid);
+	static Stream<Arguments> tokensSource() {
+		return Stream.of(
+				Arguments.of(Named.of("Should return false when incorrect token passed",
+						"INCORRECTOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc")),
+				Arguments.of(Named.of("Should return false when incorrect token signature passed",
+						"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.INCORRECT-SIGNATURE")),
+				Arguments.of(Named.of("Should return false when token token without dots",
+						"not a token")),
+				Arguments.of(Named.of("Should return false when incorrect token structure",
+						"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc.")),
+				Arguments.of(Named.of("Should return false when token parts are empty",
+						"...")),
+				Arguments.of(Named.of("Should return false when token starts with a dot",
+						".eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc")),
+				Arguments.of(Named.of("Should return false when token starts with a space",
+						" eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc")),
+				Arguments.of(Named.of("Should return false when token ends with a space",
+						"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc "))
+		);
 	}
-
-	@Test
-	final void should_returnFalse_when_incorrectTokenSignaturePassed() throws InvalidKeyException, NoSuchAlgorithmException {
-		
-		String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.INCORRECT-SIGNATURE";
+	
+	@ParameterizedTest
+	@MethodSource("tokensSource")
+	final void should_returnFalseToken_when_incorrectTokenPassed(String token) throws InvalidKeyException, NoSuchAlgorithmException {
 		
 		boolean tokenValid = jwt.isValidToken(token);
 		
 		assertFalse(tokenValid);
 	}
 	
-	@Test
-	final void should_returnFalse_when_TokenWithoutDots() throws InvalidKeyException, NoSuchAlgorithmException {
-		// протестировать с разными строками токена: с 2 точками, без, с 1 точкой, с точкой в конце
-		
-		String token = "not a token";
-		
-		boolean tokenValid = jwt.isValidToken(token);
-		
-		assertFalse(tokenValid);
-	}
-	
-	@Test
-	final void should_returnFalse_when_incorrectTokenStructure() throws InvalidKeyException, NoSuchAlgorithmException {
-		// протестировать с разными строками токена: с 2 точками, без, с 1 точкой, с точкой в конце
-		
-		String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc.";
-		
-		boolean tokenValid = jwt.isValidToken(token);
-		
-		assertFalse(tokenValid);
-	}
-	
-	@Test
-	final void should_returnFalse_when_TokenPartsEmpty() throws InvalidKeyException, NoSuchAlgorithmException {
-		// протестировать с разными строками токена: с 2 точками, без, с 1 точкой, с точкой в конце
-		
-		String token = "...";
-		
-		boolean tokenValid = jwt.isValidToken(token);
-		
-		assertFalse(tokenValid);
-	}
-	
-	@Test
-	final void should_returnFalse_when_TokenStartsWithDot() throws InvalidKeyException, NoSuchAlgorithmException {
-		// протестировать с разными строками токена: с 2 точками, без, с 1 точкой, с точкой в конце
-		
-		String token = ".eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc";
-		
-		boolean tokenValid = jwt.isValidToken(token);
-		
-		assertFalse(tokenValid);
-	}
-	
-	@Test
-	final void should_returnFalse_when_TokenStartsWithSpace() throws InvalidKeyException, NoSuchAlgorithmException {
-		// протестировать с разными строками токена: с 2 точками, без, с 1 точкой, с точкой в конце
-		
-		String token = " eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc";
-		
-		boolean tokenValid = jwt.isValidToken(token);
-		
-		assertFalse(tokenValid);
-	}
-	
-	@Test
-	final void should_returnFalse_when_TokenEndsWithSpace() throws InvalidKeyException, NoSuchAlgorithmException {
-		// протестировать с разными строками токена: с 2 точками, без, с 1 точкой, с точкой в конце
-		
-		String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1NjY1OWYwOS02MmVlLTQ4MTktODI5OC05ZmRlYTM2ZjFlNzcifQ.MWlPAKnDYk7c5EqYs7STrGs1I6PvbWjV673KE0Yifhc ";
-		
-		boolean tokenValid = jwt.isValidToken(token);
-		
-		assertFalse(tokenValid);
-	}
 }

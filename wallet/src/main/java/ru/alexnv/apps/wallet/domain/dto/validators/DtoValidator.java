@@ -63,7 +63,6 @@ public class DtoValidator extends AbstractDtoValidator {
 					char[] fieldChars = (char[]) fieldValue;
 					fieldSize = fieldChars.length;
 				} else {
-					//String fieldString = (String) fieldValue;
 					fieldSize = fieldString.length();
 				}
 

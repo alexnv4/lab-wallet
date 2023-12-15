@@ -4,9 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
@@ -92,28 +97,19 @@ class DtoValidatorTest {
 
 		assertTrue(violations.isEmpty());
 	}
-
-	@Test
-	final void should_returnFalse_whenFieldEmpty() throws IllegalArgumentException, IllegalAccessException {
-		dtoAnnotations.setTestString("");
-
-		List<String> violations = util.validateDto(dtoAnnotations);
-
-		assertFalse(violations.isEmpty());
+	
+	static Stream<Arguments> testStringCases() {
+		return Stream.of(
+				Arguments.of(Named.of("Should return false when field is empty", "")),
+				Arguments.of(Named.of("Should return false when field is null", null)),
+				Arguments.of(Named.of("Should return false when field size is too big", "123456789012345678901234567890"))
+		);
 	}
 
-	@Test
-	final void should_returnFalse_whenFieldNull() throws IllegalArgumentException, IllegalAccessException {
-		dtoAnnotations.setTestString(null);
-
-		List<String> violations = util.validateDto(dtoAnnotations);
-
-		assertFalse(violations.isEmpty());
-	}
-
-	@Test
-	final void should_returnFalse_whenFieldSizeTooBig() throws IllegalArgumentException, IllegalAccessException {
-		dtoAnnotations.setTestString("123456789012345678901234567890");
+	@ParameterizedTest
+	@MethodSource("testStringCases")
+	final void should_returnFalse_whenFieldEmpty(String testString) throws IllegalArgumentException, IllegalAccessException {
+		dtoAnnotations.setTestString(testString);
 
 		List<String> violations = util.validateDto(dtoAnnotations);
 

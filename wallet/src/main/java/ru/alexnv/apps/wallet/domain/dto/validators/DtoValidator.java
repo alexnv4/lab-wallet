@@ -16,10 +16,19 @@ import jakarta.validation.constraints.Size;
 import ru.alexnv.apps.wallet.domain.dto.AbstractDto;
 
 /**
- * 
+ * Реализация Dto валидатора
  */
 public class DtoValidator extends AbstractDtoValidator {
 
+	/**
+	 * Валидация Dto. Используется reflection для доступа к полям класса Dto.
+	 * Считываются аннотации и их значения.
+	 *
+	 * @param dto Dto для валидации
+	 * @return список нарушений валидации
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException
+	 */
 	@Override
 	public List<String> validate(AbstractDto dto) throws IllegalArgumentException, IllegalAccessException {
 		// NotEmpty, Null, Size
